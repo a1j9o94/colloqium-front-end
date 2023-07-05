@@ -68,7 +68,7 @@
       senderId = senders[0].id;
       interactionType = interaction_types[0];
 
-      console.log(campaigns)
+      console.log("API_URL: ", API_URL);
   });
 
   async function handleSubmit() {
