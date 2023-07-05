@@ -27,6 +27,6 @@ export function formatDate(date: Date): string {
     }
 }
 
-export const API_URL = import.meta.env.VITE_API_URL;
+export const API_URL = import.meta.env.VITE_API_URL ?? process.env.VITE_API_URL;
 
 export const interaction_types = ['text_message', 'phone_call'];
