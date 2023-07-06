@@ -7,7 +7,7 @@
 
   export let data;
 
-  const { senders, interactions, interaction_types, campaigns} = data; 
+  const { senders, interaction_types, campaigns} = data; 
 
   let senderId = "";
   let senderName = "";
@@ -81,56 +81,61 @@
         // Format phone number, replace placeholder with actual format function
         const formattedPhoneNumber = formatPhoneNumber(recipient["recipient_phone_number"]); 
 
-        // Attempt to get recipient information based on phone number. Ask for a json content type
         let recipientResponse = await fetch(`${API_URL}/recipient?recipient_phone_number=${formattedPhoneNumber}`);
 
-        // If recipient doesn't exist, create a new one
-        if (!recipientResponse.ok) {
-            let newRecipient = {
-                "recipient_name": recipient["recipient_name"],
-                "recipient_phone_number": formattedPhoneNumber,
-                "recipient_information": recipient["recipient_information"]
-            };
-
-            recipientResponse = await fetch(`${API_URL}/recipient`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(newRecipient)
-            });
-
+        if (recipientResponse) {
             if (!recipientResponse.ok) {
-                console.error(`Error creating recipient ${newRecipient["recipient_name"]}`);
-                continue;
+                let newRecipient = {
+                    "recipient_name": recipient["recipient_name"],
+                    "recipient_phone_number": formattedPhoneNumber,
+                    "recipient_information": recipient["recipient_information"]
+                };
+
+                recipientResponse = await fetch(`${API_URL}/recipient`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(newRecipient)
+                });
+
+                if (recipientResponse && !recipientResponse.ok) {
+                    console.error(`Error creating recipient ${newRecipient["recipient_name"]}`);
+                    continue;
+                }
             }
+
+            if (recipientResponse) {
+                // At this point, recipient either existed or has been created
+                const recipientData = await recipientResponse.json();
+                console.log(recipientData);
+                const recipientId = recipientData["recipient"]["id"];
+                console.log(recipientId);
+
+                // Now create an interaction for this recipient
+                let interaction = {
+                    recipient_id: recipientId, // assuming recipient is of type Recipient
+                    campaign_id: campaignId, // assuming campaign is of type Campaign
+                    interaction_type: 'text_message' // or any other valid interaction type
+                };
+                console.log(interaction);
+
+                let interactionResponse = await fetch(`${API_URL}/interaction`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(interaction)
+                });
+
+                if (!interactionResponse || !interactionResponse.ok) {
+                    console.error(`Error sending interaction for recipient ${recipient["recipient_name"]}`);
+                }
+            }
+        } else {
+            console.error(`Error fetching recipient ${formattedPhoneNumber}`);
         }
 
-        // At this point, recipient either existed or has been created
-        const recipientData = await recipientResponse.json();
-        console.log(recipientData);
-        const recipientId = recipientData["recipient"]["id"];
-        console.log(recipientId);
-
-        // Now create an interaction for this recipient
-        let interaction = {
-              recipient_id: recipientId, // assuming recipient is of type Recipient
-              campaign_id: campaignId, // assuming campaign is of type Campaign
-              interaction_type: 'text_message' // or any other valid interaction type
-          };
-          console.log(interaction);
-
-          let interactionResponse = await fetch(`${API_URL}/interaction`, {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json'
-              },
-              body: JSON.stringify(interaction)
-          });
-
-          if (!interactionResponse.ok) {
-              console.error(`Error sending interaction for recipient ${recipient["recipient_name"]}`);
-          }
     }
     goto(`${senderId}/confirm_messages`)
 }
