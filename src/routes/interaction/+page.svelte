@@ -109,7 +109,7 @@
                 // At this point, recipient either existed or has been created
                 const recipientData = await recipientResponse.json();
                 console.log(recipientData);
-                const recipientId = recipientData["id"];
+                const recipientId = recipientData['recipient']["id"];
                 console.log(recipientId);
 
                 // Now create an interaction for this recipient
