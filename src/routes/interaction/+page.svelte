@@ -67,8 +67,6 @@
   onMount(async () => {
       senderId = senders[0].id;
       interactionType = interaction_types[0];
-
-      console.log("API_URL: ", API_URL);
   });
 
   async function handleSubmit() {
@@ -108,9 +106,7 @@
             if (recipientResponse) {
                 // At this point, recipient either existed or has been created
                 const recipientData = await recipientResponse.json();
-                console.log(recipientData);
                 const recipientId = recipientData['recipient']["id"];
-                console.log(recipientId);
 
                 // Now create an interaction for this recipient
                 let interaction = {
@@ -118,7 +114,6 @@
                     campaign_id: campaignId, // assuming campaign is of type Campaign
                     interaction_type: 'text_message' // or any other valid interaction type
                 };
-                console.log(interaction);
 
                 let interactionResponse = await fetch(`${API_URL}/interaction`, {
                     method: 'POST',
