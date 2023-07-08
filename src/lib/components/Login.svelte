@@ -12,7 +12,7 @@
     }
 </script>
 
-<main class="card w-4/6 bg-neutral text-neutral-content mx-auto">
+<main class="card w-4/6 bg-teal-950 text-neutral-content mx-auto">
     <div class="card-body items-center text-center">
         <p class="text-error">You are not signed in!</p>
         <h1>Sign In</h1>
