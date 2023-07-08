@@ -5,15 +5,18 @@ import { getAuth, onAuthStateChanged, type User } from 'firebase/auth';
 import { getStorage } from 'firebase/storage';
 import { writable } from 'svelte/store';
 
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-    apiKey: "AIzaSyDoF7hr-z9aC8oXouVVefLIp0lpNeOnKV0",
-    authDomain: "svelte-links.firebaseapp.com",
-    projectId: "svelte-links",
-    storageBucket: "svelte-links.appspot.com",
-    messagingSenderId: "11174077482",
-    appId: "1:11174077482:web:dc9de0c984583c814ccf53",
-    measurementId: "G-PV6XWL2122"
-  };
+  apiKey: "AIzaSyBWXMpFnNQGcBvkbMzB7jgfa0id-BXcVoQ",
+  authDomain: "colloqium-fd5b6.firebaseapp.com",
+  projectId: "colloqium-fd5b6",
+  storageBucket: "colloqium-fd5b6.appspot.com",
+  messagingSenderId: "1058418476196",
+  appId: "1:1058418476196:web:2d201500fc6adb40999231",
+  measurementId: "G-Y250MPMT8F"
+};
+
 
   export const app = initializeApp(firebaseConfig);
   export const db = getFirestore();

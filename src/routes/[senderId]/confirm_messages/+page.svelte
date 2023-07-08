@@ -1,6 +1,7 @@
 <script>
     import { onMount } from 'svelte';
     import { API_URL } from '$lib/utility';
+	import AuthCheck from '$lib/components/AuthCheck.svelte';
 
     export let data;
     
@@ -44,7 +45,7 @@
     })
 </script>
 
-
+<AuthCheck>
 <div class="container">
     <h1 class="my-4">Interactions</h1>
     <table class="table table-striped">
@@ -73,3 +74,4 @@
         </tbody>
     </table>
 </div>
+</AuthCheck>
