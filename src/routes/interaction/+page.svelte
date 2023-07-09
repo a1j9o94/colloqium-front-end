@@ -6,6 +6,7 @@
   import { formatDate, formatPhoneNumber, API_URL } from "$lib/utility.js";
 
   export let data;
+  let isLoading = false;
 
   const { senders, interaction_types, campaigns} = data; 
 
@@ -70,6 +71,7 @@
   });
 
   async function handleSubmit() {
+    isLoading = true;
     // Ensure that we have a campaign selected
     if (!campaignId) {
         console.error('No campaign selected');
@@ -217,7 +219,13 @@
         </select>
       </div>
       <div class="mb-8 text-center">
-        <button type="submit" class="w-full px-3 py-4 text-white bg-indigo-500 rounded-md focus:bg-indigo-600 focus:outline-none">Submit</button>
+        <button type="submit" class="w-full px-3 py-4 text-white bg-indigo-500 rounded-md focus:bg-indigo-600 focus:outline-none">
+          {#if isLoading}
+            <span class="loading loading-spinner loading-md"></span>
+          {:else}
+            Submit
+          {/if}
+        </button>
       </div>
     </form>
   </div>
