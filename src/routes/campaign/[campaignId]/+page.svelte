@@ -10,8 +10,8 @@
     })
 </script>
 
-<div>
-    <h1 class="text-4xl font-bold mb-4">{campaign.campaign_name}</h1>
+<div class="w-2/3 grid grid-cols-1 place-self-center">
+    <h1 class="text-4xl font-bold mb-4 flex justify-center items-center pt-5">{campaign.campaign_name}</h1>
     <p>{campaign.campaign_information}</p>
     
     {#each campaign.audiences as audience, index}

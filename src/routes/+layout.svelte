@@ -1,28 +1,32 @@
 <script lang="ts">
-    import "../app.css";
-    import { page } from '$app/stores';
-    import { user } from "$lib/firebase";
+  import "../app.css";
+  import { page } from '$app/stores';
+  import { user } from "$lib/firebase";
 </script>
 
-<div class="navbar bg-base-100">
-    <div class="flex-1">
-      <a class="btn btn-ghost normal-case text-xl" href="/">Colloqium</a>
-    </div>
-    <div class="flex-none">
-      <ul class="menu menu-horizontal px-1">
-       <!--If not logged in show login, otherwise show Insights and Campaigns lins-->
+<div class="flex flex-col items-center h-screen bg-white bg-gradient-to-b from-white to-[rgb(142.03,234.07,236.73)] w-full">
+  <div class="relative w-full px-8 lg:px-32 xl:px-64 h-[96px]">
+    <div class="flex justify-between items-center w-full h-full">
+      <div class="text-center text-[14px] leading-[14px] font-semibold text-black">Colloqium</div>
+    
+      <div class="flex space-x-4">
         {#if !$user} 
-       <li><a href='/login'>Login</a></li>
+          <div class="text-center text-[14px] leading-[14px] text-black">
+            <a href="/login">Login</a>
+          </div>
         {:else}   
-            <li><a href='/insights'>Insights</a></li>
-            <li><a href='/campaign'>Campaigns</a></li>
-            <li><a href='/logout'>Logout</a></li>
+          <div class="text-center text-[14px] leading-[14px] text-black">
+            <a href="/insights">Insights</a>
+          </div>
+          <div class="text-center text-[14px] leading-[14px] text-black">
+            <a href="/campaign">Campaigns</a>
+          </div>
+          <div class="text-center text-[14px] leading-[14px] text-black">
+            <a href="/logout">Logout</a>
+          </div>
         {/if}
-       
-      </ul>
+      </div>
     </div>
   </div>
-
-<div class="min-h-screen flex flex-col">
-    <slot/>    
+  <slot/>
 </div>
