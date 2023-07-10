@@ -151,7 +151,8 @@
       }
       let audience = {
                       audience_id: audienceId,
-                      recipients: recipientIds
+                      recipients: recipientIds,
+                      campaigns: [campaignId]
                   };
 
       //create a PUT request to the audience endpoint to add the recipients to the audience
