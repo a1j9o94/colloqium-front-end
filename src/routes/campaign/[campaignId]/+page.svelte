@@ -12,7 +12,7 @@
 
 <div class="w-2/3 grid grid-cols-1 place-self-center">
     <h1 class="text-4xl font-bold mb-4 flex justify-center items-center pt-5">{campaign.campaign_name}</h1>
-    <p>{campaign.campaign_information}</p>
+    <p>{campaign.campaign_goal}</p>
     
     {#each campaign.audiences as audience, index}
         <div class="collapse bg-base-200 mt-4">

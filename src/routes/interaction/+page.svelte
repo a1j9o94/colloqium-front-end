@@ -16,7 +16,7 @@
   let senderInformation = "";
   let campaignId = "";
   let campaignName = "";
-  let campaignInformation = "";
+  let campaignPrompt = "";
   let campaignEndDate = "";
   let interactionType = "";
   let availableCampaigns: Campaign[] = [];
@@ -29,7 +29,7 @@
     if (!availableCampaigns.find(campaign => campaign.id === campaignId)) {
         campaignId = "";
         campaignName = "";
-        campaignInformation = "";
+        campaignPrompt = "";
         campaignEndDate = "";
     }
 }
@@ -45,7 +45,7 @@
         // Reset the campaign details
         campaignId = "";
         campaignName = "";
-        campaignInformation = "";
+        campaignPrompt = "";
         campaignEndDate = "";
     }
 }
@@ -55,11 +55,11 @@
   $: {
     const selectedCampaign = availableCampaigns.find(campaign => campaign.id === campaignId);
     if (selectedCampaign) {
-        campaignInformation = selectedCampaign.campaign_information;
+        campaignPrompt = selectedCampaign.campaign_prompt;
         campaignEndDate = formatDate(new Date(selectedCampaign.campaign_end_date));
     } else {
         // Reset campaign details if no matching campaign is found
-        campaignInformation = "";
+        campaignPrompt = "";
         campaignEndDate = formatDate(new Date());
     }
   }
@@ -75,65 +75,120 @@
     // Ensure that we have a campaign selected
     if (!campaignId) {
         console.error('No campaign selected');
+        isLoading = false;
         return;
     }
-    for (let recipient of recipients) {
-        // Format phone number, replace placeholder with actual format function
-        const formattedPhoneNumber = formatPhoneNumber(recipient["recipient_phone_number"]); 
 
-        let recipientResponse = await fetch(`${API_URL}/recipient?recipient_phone_number=${formattedPhoneNumber}`);
+    //check if a csv was submitted by seeing the recipients array is empty
+    if (recipients.length != 0) {
+      //create a new audience with the recipients
+      let audienceResponse = await fetch(`${API_URL}/audience`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          audience_name: campaignName + " Audience " + Date.now(),
+          sender_id: senderId,
+          audience_information: "This is an audience for the campaign " + campaignName
+        })
+      });
 
-        if (recipientResponse) {
-            if (!recipientResponse.ok) {
-                let newRecipient = {
-                    "recipient_name": recipient["recipient_name"],
-                    "recipient_phone_number": formattedPhoneNumber,
-                    "recipient_information": recipient["recipient_information"]
-                };
+      if (audienceResponse && !audienceResponse.ok) {
+        console.error(`Error creating audience for ${campaignName}`);
+        isLoading = false;
+        return;
+      }
 
-                recipientResponse = await fetch(`${API_URL}/recipient`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(newRecipient)
-                });
+      // At this point, audience has been created
+      const audienceData = await audienceResponse.json();
+      const audienceId = audienceData['audience']["id"];
 
-                if (recipientResponse && !recipientResponse.ok) {
-                    console.error(`Error creating recipient ${newRecipient["recipient_name"]}`);
-                    continue;
-                }
-            }
+      //create an array that will hold all of the recipient ids for the audience
+      let recipientIds = [];
 
-            if (recipientResponse) {
-                // At this point, recipient either existed or has been created
-                const recipientData = await recipientResponse.json();
-                const recipientId = recipientData['recipient']["id"];
+      for (let recipient of recipients) {
+          // Format phone number, replace placeholder with actual format function
+          const formattedPhoneNumber = formatPhoneNumber(recipient["recipient_phone_number"]); 
 
-                // Now create an interaction for this recipient
-                let interaction = {
-                    recipient_id: recipientId, // assuming recipient is of type Recipient
-                    campaign_id: campaignId, // assuming campaign is of type Campaign
-                    interaction_type: 'text_message' // or any other valid interaction type
-                };
+          let recipientResponse = await fetch(`${API_URL}/recipient?recipient_phone_number=${formattedPhoneNumber}`);
 
-                let interactionResponse = await fetch(`${API_URL}/interaction`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(interaction)
-                });
+          if (recipientResponse) {
+              if (!recipientResponse.ok) {
+                  let newRecipient = {
+                      "recipient_name": recipient["recipient_name"],
+                      "recipient_phone_number": formattedPhoneNumber,
+                      "recipient_information": recipient["recipient_information"]
+                  };
 
-                if (!interactionResponse || !interactionResponse.ok) {
-                    console.error(`Error sending interaction for recipient ${recipient["recipient_name"]}`);
-                }
-            }
-        } else {
-            console.error(`Error fetching recipient ${formattedPhoneNumber}`);
-        }
+                  recipientResponse = await fetch(`${API_URL}/recipient`, {
+                      method: 'POST',
+                      headers: {
+                          'Content-Type': 'application/json'
+                      },
+                      body: JSON.stringify(newRecipient)
+                  });
+
+                  if (recipientResponse && !recipientResponse.ok) {
+                      console.error(`Error creating recipient ${newRecipient["recipient_name"]}`);
+                      continue;
+                  }
+              }
+
+              if (recipientResponse) {
+                  // At this point, recipient either existed or has been created
+                  const recipientData = await recipientResponse.json();
+                  const recipientId = recipientData['recipient']["id"];
+
+                  // Add recipient to audience
+                  recipientIds.push(recipientId);
+
+              }
+          } else {
+              console.error(`Error fetching recipient ${formattedPhoneNumber}`);
+          }
+
+      }
+      let audience = {
+                      audience_id: audienceId,
+                      recipients: recipientIds
+                  };
+
+      //create a PUT request to the audience endpoint to add the recipients to the audience
+      let audienceUpdateResponse = await fetch(`${API_URL}/audience`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(audience)
+      });
+
+      if (audienceUpdateResponse && !audienceUpdateResponse.ok) {
+        console.error(`Error updating audience for ${campaignName}`);
+        isLoading = false;
+        return;
+      }
 
     }
+
+    //call the interaction route with a post including the campaign id and interaction type to generate the messages
+    let interactionResponse = await fetch(`${API_URL}/interaction`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        campaign_id: campaignId,
+        interaction_type: interactionType
+      })
+    });
+
+    if (interactionResponse && !interactionResponse.ok) {
+      console.error(`Error creating interaction for ${campaignName}`);
+      isLoading = false;
+      return;
+    }
+    
     goto(`${senderId}/confirm_messages`)
 }
 
@@ -199,8 +254,8 @@
       </div>
     
       <div class="mb-5">
-        <label for="campaignInfo" class="block mb-2 text-sm">Campaign Information</label>
-        <textarea id="campaignInfo" bind:value={campaignInformation} rows="3" class="w-full px-5 py-1 text-gray-700 bg-gray-200 rounded" disabled></textarea>
+        <label for="campaignInfo" class="block mb-2 text-sm">Campaign Prompt</label>
+        <textarea id="campaignInfo" bind:value={campaignPrompt} rows="3" class="w-full px-5 py-1 text-gray-700 bg-gray-200 rounded" disabled></textarea>
       </div> 
       <div class="mb-5">
         <label for="endDate" class="block mb-2 text-sm">Campaign End Date</label>

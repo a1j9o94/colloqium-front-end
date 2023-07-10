@@ -1,66 +1,71 @@
-//define a type for an interacttion it should be an object that 
-
-/*
-{
-    "campaign_id": 2,
-    "recipient_id": 1,
-    "interaction_type": "text_message"
-}
-*/
-
-export interface Interaction {
-    id: string;
-    campaign: Campaign;
-    recipient: Recipient;
-    interaction_type: string;
-    interaction_status: string;
-}
-
-
-/*
-{
-    "sender_name": "TestSender",
-    "sender_information": "This is a test sender",
-    "phone_numbers": ["+16174335929"]
-}
-
-*/
-
-export interface Sender {
-    sender_name: string;
-    id: string;
-    sender_information: string;
-    phone_numbers: string[];
-}
-
-/*
- {
-    "sender_id": 1,
-    "campaign_name": "2023 Houston Mayoral Race - Volunteer Recruitment",
-    "campaign_information": "Your name is Sarah. You are a volunteer for John Whitmire's Mayoral race. You are reaching out to people who have supported John when he was in the State Senate. Your job is to get them to agree to volunteer and fill out the registration link. If they do agree, send them this link to register: https://forms.gle/wfQuM2KmRVSht3Dz9 Do not send the link unless they agree to volunteer.Be brief. Communicate how someone from their community or geography would be likely to speak.",
-    "campaign_end_date": "2023-11-07"
-}
-*/
-
-export interface Campaign {
-    id: string;
-    campaign_name: string;
-    campaign_information: string;
-    sender: Sender;
-    campaign_end_date: Date;
-}
-
-/*
-{
-    "recipient_name": "Adrian Obleton",
-    "recipient_information": "Adrian is a tech enthusist",
-    "recipient_phone_number": "(706)664-1258"
-}
-*/
-
 export interface Recipient {
     id: string;
     recipient_name: string;
     recipient_information: string;
     recipient_phone_number: string;
+    recipient_profile: string;
+    recipient_engagement_history: string;
+    interactions: Interaction[];
+    audiences: Audience[];
+}
+
+export interface Interaction {
+    id: string;
+    twilio_conversation_sid: string;
+    conversation: string;
+    interaction_type: string;
+    interaction_goal: string;
+    recipient_id: string;
+    sender_id: string;
+    campaign_id: string;
+    recipient_outreach_schedule: string;
+    interaction_status: string;
+    time_created: Date;
+    time_updated: Date;
+    goal_achieved: boolean;
+    rating_explanation: string;
+    rating: number;
+    campaign_relevance_score: number;
+    campaign_relevance_explanation: string;
+    campaign_relevance_summary: string;
+    insights_about_issues: string;
+    insights_about_recipient: string;
+}
+
+export interface Sender {
+    id: string;
+    sender_name: string;
+    sender_information: string;
+    sender_schedule: string;
+    interactions: Interaction[];
+    phone_numbers: string[];  // if PhoneNumber has more properties, create an interface for it.
+}
+
+export interface Audience {
+    id: string;
+    audience_name: string;
+    audience_information: string;
+    sender_id: string;
+    recipients: Recipient[];
+    campaigns: Campaign[];
+}
+
+export interface Campaign {
+    id: string;
+    campaign_name: string;
+    campaign_prompt: string;
+    campaign_goal: string;
+    campaign_fallback: string;
+    example_interactions: string;
+    sender_id: string;
+    campaign_end_date: Date;
+    campaign_manager_summary: string;
+    communications_director_summary: string;
+    field_director_summary: string;
+    interactions_sent: number;
+    interactions_delivered: number;
+    interactions_responded: number;
+    interactions_converted: number;
+    interactions: Interaction[];
+    audiences: Audience[];
 }
