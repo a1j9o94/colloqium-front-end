@@ -8,7 +8,6 @@ export async function load({ fetch, params }) {
         const response = await fetch(`${API_URL}/interaction?sender_id=${senderId}`);
     
         if (!response.ok) {
-            console.log(response);
             throw new Error(`HTTP error! status: ${response.status}`);
         }
     
@@ -17,7 +16,6 @@ export async function load({ fetch, params }) {
         //filter out any interactions without an interaction_status of 'initialized'
         response_json = response_json.filter((interaction: Interaction) => interaction.interaction_status === 'initialized');
 
-        console.log(JSON.stringify(response_json, null, 2));
         return response_json;
     }
 

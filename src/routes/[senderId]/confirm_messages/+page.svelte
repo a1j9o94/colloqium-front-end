@@ -41,7 +41,6 @@
     }
 
     onMount(async () => {
-        console.log('interactions: ', interactions);
     })
 </script>
 
