@@ -15,9 +15,9 @@ export interface Interaction {
     conversation: string;
     interaction_type: string;
     interaction_goal: string;
-    recipient_id: string;
-    sender_id: string;
-    campaign_id: string;
+    recipient: Recipient;
+    sender: Sender;
+    campaign: Campaign;
     recipient_outreach_schedule: string;
     interaction_status: string;
     time_created: Date;
@@ -45,7 +45,7 @@ export interface Audience {
     id: string;
     audience_name: string;
     audience_information: string;
-    sender_id: string;
+    sender: Sender;
     recipients: Recipient[];
     campaigns: Campaign[];
 }
@@ -57,7 +57,7 @@ export interface Campaign {
     campaign_goal: string;
     campaign_fallback: string;
     example_interactions: string;
-    sender_id: string;
+    sender: Sender;
     campaign_end_date: Date;
     campaign_manager_summary: string;
     communications_director_summary: string;

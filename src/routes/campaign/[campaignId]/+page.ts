@@ -26,18 +26,7 @@ export const load = (async ({fetch, params}) => {
         
           } catch (error) {
             console.error("Error fetching campaigns: ", error);
-            return {
-                id: '',
-                campaign_name: '',
-                campaign_information: '',
-                sender: {
-                    id: '',
-                    sender_name: '',
-                    sender_information: '',
-                    phone_numbers: []
-                },
-                campaign_end_date: new Date(),
-            }; // Return an empty array if there was an error fetching the data
+            return {} as Campaign; // Return an empty array if there was an error fetching the data
           }
     }
 

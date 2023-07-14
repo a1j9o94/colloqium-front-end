@@ -1,15 +1,18 @@
 <script>
-    import { onMount } from 'svelte';
+    import { onMount, onDestroy } from 'svelte';
+    import io from 'socket.io-client';
     import { API_URL } from '$lib/utility';
-	import AuthCheck from '$lib/components/AuthCheck.svelte';
+    import { writable } from 'svelte/store';
+    import AuthCheck from '$lib/components/AuthCheck.svelte';
 
     export let data;
-    
-    // Assign interactions to a local variable so Svelte can react to changes
-    let interactions = data.interactions;
+    const { sender } = data;
+
+    let socket;
+    let interactions = writable(data.interactions);
 
     async function sendInteraction(interactionIndex) {
-        const interaction = interactions[interactionIndex];
+        const interaction = $interactions[interactionIndex];
         let interactionId = interaction.id;
         let interactionMethod = "send_text";
         let url = `${API_URL}/${interactionMethod}`;
@@ -37,11 +40,46 @@
         }
 
         // This assignment will trigger Svelte's reactivity
-        interactions = [...interactions];
+        interactions.update(interactions => {
+            interactions[interactionIndex] = interaction;
+            return [...interactions];
+        });
     }
 
-    onMount(async () => {
-    })
+    onMount(() => {
+
+        console.log("Sender:", sender);
+        // Connect to the server
+        socket = io(`${API_URL}`);
+
+        // Join the room for the current sender
+        socket.emit('subscribe_sender_confirmation', { "sender_id": sender.id });
+        console.log(`Emitted subscribe_sender_confirmation for sender id: , ${sender.id}`)
+
+        // Listen for the 'interaction_initialized' event
+        socket.on('interaction_initialized', async (data) => {
+            // Fetch the interaction object from the API
+            const response = await fetch(`${API_URL}/interaction?interaction_id=${data.interaction_id}`);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const interaction = await response.json();
+
+            // Add the new interaction to the top of the list
+            interactions.update(value => [interaction, ...value]);
+        });
+
+        socket.on('message', async (data) => {
+            console.log(data);
+        })
+    });
+
+    onDestroy(() => {
+        // Disconnect from the server when the component is destroyed
+        if (socket) {
+            socket.disconnect();
+        }
+    });
 </script>
 
 <AuthCheck>
@@ -57,7 +95,7 @@
             </tr>
         </thead>
         <tbody>
-            {#each interactions as interaction, interactionIndex (interaction.id)}
+            {#each $interactions as interaction, interactionIndex (interaction.id)}
                 <tr>
                     <td>{interaction.recipient.recipient_name}</td>
                     <td>{interaction.interaction_type}</td>
