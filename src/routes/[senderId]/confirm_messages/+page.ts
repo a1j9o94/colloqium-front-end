@@ -12,12 +12,14 @@ export const load = (async ({ fetch, params }) => {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
     
-        let response_json: Interaction[] = await response.json();
+        const response_json = await response.json()
+
+        let interactions = response_json.interactions as Interaction[];
     
         //filter out any interactions without an interaction_status of 'initialized'
-        response_json = response_json.filter((interaction: Interaction) => interaction.interaction_status === 'initialized');
+        interactions = interactions.filter((interaction: Interaction) => interaction.interaction_status === 'initialized');
 
-        return response_json;
+        return interactions;
     }
 
     const fetchSender = async () => {
