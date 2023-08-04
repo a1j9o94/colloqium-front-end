@@ -91,8 +91,7 @@
     <table class="table table-striped">
         <thead class="thead-light">
             <tr>
-                <th scope="col">Voter Name</th>
-                <th scope="col">Interaction Type</th>
+                <th scope="col">Voter</th>
                 <th scope="col">Interaction Message</th>
                 <th scope="col">Action</th>
             </tr>
@@ -101,7 +100,6 @@
             {#each $interactions as interaction, interactionIndex (interaction.id)}
                 <tr>
                     <td>{interaction.voter.voter_name}</td>
-                    <td>{interaction.interaction_type}</td>
                     <!-- Get the last item in the conversation array -->
                     <td>{interaction.conversation[interaction.conversation.length - 1].content}</td>
                     <td>
