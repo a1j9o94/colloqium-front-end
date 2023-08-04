@@ -207,10 +207,10 @@
                     voters = raw_voters.map((voter): Voter => {
                       return {
                         id: "",
-                        voter_name: voter["voter Name"],
+                        voter_name: voter["Voter Name"],
                         voter_phone_number: formatPhoneNumber(voter["Phone Number"]),
                         voter_profile: {
-                          interests: voter["voter Information"]
+                          interests: voter["Voter Information"]
                         }
                       };
                     });
