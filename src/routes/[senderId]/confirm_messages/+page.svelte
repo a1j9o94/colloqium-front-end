@@ -23,7 +23,7 @@
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ interaction_status: "human_confirmed", interaction_id: interactionId})
+                body: JSON.stringify({ interaction_status: 3, interaction_id: interactionId})
             });
 
             if (response.status != 200) {
@@ -63,7 +63,10 @@
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
-            const interaction = await response.json();
+            const interaction_response = await response.json();
+            console.log("Interaction:", interaction_response.interaction);
+
+            const interaction = interaction_response.interaction;
 
             // Add the new interaction to the top of the list
             interactions.update(value => [interaction, ...value]);
@@ -88,7 +91,7 @@
     <table class="table table-striped">
         <thead class="thead-light">
             <tr>
-                <th scope="col">Recipient Name</th>
+                <th scope="col">Voter Name</th>
                 <th scope="col">Interaction Type</th>
                 <th scope="col">Interaction Message</th>
                 <th scope="col">Action</th>
@@ -97,7 +100,7 @@
         <tbody>
             {#each $interactions as interaction, interactionIndex (interaction.id)}
                 <tr>
-                    <td>{interaction.recipient.recipient_name}</td>
+                    <td>{interaction.voter.voter_name}</td>
                     <td>{interaction.interaction_type}</td>
                     <!-- Get the last item in the conversation array -->
                     <td>{interaction.conversation[interaction.conversation.length - 1].content}</td>

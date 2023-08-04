@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { goto } from '$app/navigation';
   import papa from "papaparse";
-  import type { Campaign, Recipient } from "$lib/model";
+  import type { Campaign, Voter } from "$lib/model";
   import { formatDate, formatPhoneNumber, API_URL } from "$lib/utility.js";
 
   export let data;
@@ -20,7 +20,7 @@
   let campaignEndDate = "";
   let interactionType = "";
   let availableCampaigns: Campaign[] = [];
-  let recipients: Recipient[] = [];
+  let voters: Voter[] = [];
 
   $: {
     availableCampaigns = campaigns.filter(campaign => campaign.sender.id === senderId && new Date(campaign.campaign_end_date) > new Date());
@@ -79,9 +79,9 @@
         return;
     }
 
-    //check if a csv was submitted by seeing the recipients array is empty
-    if (recipients.length != 0) {
-      //create a new audience with the recipients
+    //check if a csv was submitted by seeing the voters array is empty
+    if (voters.length != 0) {
+      //create a new audience with the voters
       let audienceResponse = await fetch(`${API_URL}/audience`, {
         method: 'POST',
         headers: {
@@ -104,58 +104,58 @@
       const audienceData = await audienceResponse.json();
       const audienceId = audienceData['audience']["id"];
 
-      //create an array that will hold all of the recipient ids for the audience
-      let recipientIds = [];
+      //create an array that will hold all of the voter ids for the audience
+      let voterIds = [];
 
-      for (let recipient of recipients) {
+      for (let voter of voters) {
           // Format phone number, replace placeholder with actual format function
-          const formattedPhoneNumber = formatPhoneNumber(recipient["recipient_phone_number"]); 
+          const formattedPhoneNumber = formatPhoneNumber(voter["voter_phone_number"]); 
 
-          let recipientResponse = await fetch(`${API_URL}/recipient?recipient_phone_number=${formattedPhoneNumber}`);
+          let voterResponse = await fetch(`${API_URL}/voter?voter_phone_number=${formattedPhoneNumber}`);
 
-          if (recipientResponse) {
-              if (!recipientResponse.ok) {
-                  let newRecipient = {
-                      "recipient_name": recipient["recipient_name"],
-                      "recipient_phone_number": formattedPhoneNumber,
-                      "recipient_information": recipient["recipient_information"]
+          if (voterResponse) {
+              if (!voterResponse.ok) {
+                  let newvoter = {
+                      "voter_name": voter["voter_name"],
+                      "voter_phone_number": formattedPhoneNumber,
+                      "voter_profile": voter["voter_profile"]
                   };
 
-                  recipientResponse = await fetch(`${API_URL}/recipient`, {
+                  voterResponse = await fetch(`${API_URL}/voter`, {
                       method: 'POST',
                       headers: {
                           'Content-Type': 'application/json'
                       },
-                      body: JSON.stringify(newRecipient)
+                      body: JSON.stringify(newvoter)
                   });
 
-                  if (recipientResponse && !recipientResponse.ok) {
-                      console.error(`Error creating recipient ${newRecipient["recipient_name"]}`);
+                  if (voterResponse && !voterResponse.ok) {
+                      console.error(`Error creating voter ${newvoter["voter_name"]}`);
                       continue;
                   }
               }
 
-              if (recipientResponse) {
-                  // At this point, recipient either existed or has been created
-                  const recipientData = await recipientResponse.json();
-                  const recipientId = recipientData['recipient']["id"];
+              if (voterResponse) {
+                  // At this point, voter either existed or has been created
+                  const voterData = await voterResponse.json();
+                  const voterId = voterData['voter']["id"];
 
-                  // Add recipient to audience
-                  recipientIds.push(recipientId);
+                  // Add voter to audience
+                  voterIds.push(voterId);
 
               }
           } else {
-              console.error(`Error fetching recipient ${formattedPhoneNumber}`);
+              console.error(`Error fetching voter ${formattedPhoneNumber}`);
           }
 
       }
       let audience = {
                       audience_id: audienceId,
-                      recipients: recipientIds,
+                      voters: voterIds,
                       campaigns: [campaignId]
                   };
 
-      //create a PUT request to the audience endpoint to add the recipients to the audience
+      //create a PUT request to the audience endpoint to add the voters to the audience
       let audienceUpdateResponse = await fetch(`${API_URL}/audience`, {
         method: 'PUT',
         headers: {
@@ -202,14 +202,16 @@
                 header: true,
                 complete: function (results) {
                   
-                    let raw_recipients = results.data as Record<string, any>[];
+                    let raw_voters = results.data as Record<string, any>[];
 
-                    recipients = raw_recipients.map((recipient): Recipient => {
+                    voters = raw_voters.map((voter): Voter => {
                       return {
                         id: "",
-                        recipient_name: recipient["Recipient Name"],
-                        recipient_phone_number: formatPhoneNumber(recipient["Phone Number"]),
-                        recipient_information: recipient["Recipient Information"]
+                        voter_name: voter["voter Name"],
+                        voter_phone_number: formatPhoneNumber(voter["Phone Number"]),
+                        voter_profile: {
+                          interests: voter["voter Information"]
+                        }
                       };
                     });
                 }
@@ -263,8 +265,8 @@
         <input type="date" id="endDate" bind:value={campaignEndDate} class="w-full px-5 py-1 text-gray-700 bg-gray-200 rounded" disabled />
       </div>
       <div class="mb-5">
-        <label for="recipientCSV" class="block mb-2 text-sm">Recipient CSV</label>
-        <input type="file" id="recipientCSV" on:change={handleChange} class="w-full px-5 py-1 text-gray-700 bg-gray-200 rounded" />
+        <label for="voterCSV" class="block mb-2 text-sm">voter CSV</label>
+        <input type="file" id="voterCSV" on:change={handleChange} class="w-full px-5 py-1 text-gray-700 bg-gray-200 rounded" />
       </div>
       <div class="mb-5">
         <label for="interactionType" class="block mb-2 text-sm">Interaction Type</label>

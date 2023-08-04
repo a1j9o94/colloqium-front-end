@@ -1,12 +1,19 @@
-export interface Recipient {
+export interface Voter {
     id: string;
-    recipient_name: string;
-    recipient_information: string;
-    recipient_phone_number: string;
-    recipient_profile: string;
-    recipient_engagement_history: string;
+    voter_name: string;
+    voter_phone_number: string;
+    voter_profile: VoterProfile;
+    voter_engagement_history: string;
     interactions: Interaction[];
     audiences: Audience[];
+}
+
+export interface VoterProfile {
+    id: string;
+    voter: Voter;
+    interests: string;
+    policy_preferences: string;
+    preferred_contact_method: string;
 }
 
 export interface Interaction {
@@ -15,11 +22,11 @@ export interface Interaction {
     conversation: string;
     interaction_type: string;
     interaction_goal: string;
-    recipient: Recipient;
+    voter: Voter;
     sender: Sender;
     campaign: Campaign;
-    recipient_outreach_schedule: string;
-    interaction_status: string;
+    voter_outreach_schedule: string;
+    interaction_status: number;
     time_created: Date;
     time_updated: Date;
     goal_achieved: boolean;
@@ -29,7 +36,7 @@ export interface Interaction {
     campaign_relevance_explanation: string;
     campaign_relevance_summary: string;
     insights_about_issues: string;
-    insights_about_recipient: string;
+    insights_about_Voter: string;
 }
 
 export interface Sender {
@@ -46,7 +53,7 @@ export interface Audience {
     audience_name: string;
     audience_information: string;
     sender: Sender;
-    recipients: Recipient[];
+    voters: Voter[];
     campaigns: Campaign[];
 }
 

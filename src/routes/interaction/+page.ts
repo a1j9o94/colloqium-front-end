@@ -54,7 +54,7 @@ export const load = (async () => {
     }
 
     const fetchInteractionTypes = async () => {
-        return ['text_message', 'phone_call']
+        return ['text_message']
     }
     
     return {

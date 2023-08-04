@@ -17,7 +17,7 @@ export const load = (async ({ fetch, params }) => {
         let interactions = response_json.interactions as Interaction[];
     
         //filter out any interactions without an interaction_status of 'initialized'
-        interactions = interactions.filter((interaction: Interaction) => interaction.interaction_status === 'initialized');
+        interactions = interactions.filter((interaction: Interaction) => interaction.interaction_status == 2);
 
         return interactions;
     }
