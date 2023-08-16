@@ -113,6 +113,7 @@
                     <h2>No Policy Insights</h2>
                 {/if}
                 <p>{interaction.insights_about_voter}</p>
+                <a href="/interaction/{interaction.id}" >View Interaction</a>
             </div>
         </div>
     {/each}

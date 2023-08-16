@@ -19,7 +19,7 @@ export interface VoterProfile {
 export interface Interaction {
     id: string;
     twilio_conversation_sid: string;
-    conversation: string;
+    conversation: [];
     interaction_type: string;
     interaction_goal: string;
     voter: Voter;
