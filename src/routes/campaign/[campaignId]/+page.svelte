@@ -71,14 +71,14 @@
             <div class="collapse-content">
                 <p>{audience.audience_information}</p>
                 
-                {#each audience.recipients as recipient, rindex}
+                {#each audience.voters as voter, rindex}
                     <div class="collapse bg-base-300 mt-2">
-                        <input type="checkbox" id={"recipient" + index + "-" + rindex} />
-                        <label for={"recipient" + index + "-" + rindex} class="collapse-title text-lg font-medium">
-                            {recipient.recipient_name}
+                        <input type="checkbox" id={"voter" + index + "-" + rindex} />
+                        <label for={"voter" + index + "-" + rindex} class="collapse-title text-lg font-medium">
+                            {voter.voter_name}
                         </label>
                         <div class="collapse-content">
-                            <p>{recipient.recipient_information}</p>
+                            <p>{voter.voter_profile.interests}</p>
                         </div>
                     </div>
                 {/each}
@@ -90,7 +90,7 @@
         <div>
             Interaction ID: {interaction.id}
             Interaction Type: {interaction.interaction_type}
-            Recipient Name: {interaction.recipient.recipient_name}
+            voter Name: {interaction.voter.voter_name}
         </div>
     {/each}
 
