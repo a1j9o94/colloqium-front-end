@@ -75,4 +75,5 @@ export interface Campaign {
     interactions_converted: number;
     interactions: Interaction[];
     audiences: Audience[];
+    policy_insights: object;
 }

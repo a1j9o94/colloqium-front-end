@@ -85,6 +85,14 @@
         <p>{campaign.communications_director_summary}</p>
         <h2>Field Summary</h2>
         <p>{campaign.field_director_summary}</p>
+        <!-- Check if campaign.policy_insights is a string. If so, do not show it-->
+        {#if campaign.policy_insights && typeof campaign.policy_insights === 'object' && !(campaign.policy_insights instanceof String)}
+            <h2>Policy Insights</h2>
+
+            {#each Object.entries(campaign.policy_insights) as [policy_area, insight] }
+                <p>{policy_area}: {insight}</p>
+            {/each}
+        {/if}
         <btn class="btn btn-primary" on:click={refreshInsights}>Refresh Insights</btn>
     </div>
 
@@ -95,9 +103,15 @@
             <div class="card-body">
                 <h2>Campaign Relevance Score: {interaction.campaign_relevance_score}</h2>
                 <p>{interaction.campaign_relevance_summary}</p>
-                {#each Object.entries(interaction.insights_about_issues) as [policy_area, insight] }
-                    <p>{policy_area.toLocaleUpperCase()}: {insight}</p>
-                {/each}
+                {#if interaction.insights_about_issues && typeof interaction.insights_about_issues === 'object' && !(interaction.insights_about_issues instanceof String)}
+                    <h2>Policy Insights</h2>
+
+                    {#each Object.entries(interaction.insights_about_issues) as [policy_area, insight] }
+                        <p>{policy_area}: {insight}</p>
+                    {/each}
+                {:else}
+                    <h2>No Policy Insights</h2>
+                {/if}
                 <p>{interaction.insights_about_voter}</p>
             </div>
         </div>
