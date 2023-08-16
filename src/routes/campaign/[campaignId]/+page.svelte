@@ -60,6 +60,7 @@
 
 <div class="w-2/3 grid grid-cols-1 place-self-center">
     <h1 class="text-4xl font-bold mb-4 flex justify-center items-center pt-5">{campaign.campaign_name}</h1>
+    <a href="/campaign/{campaign.id}/insights" class="btn">Insights</a>
     <p>{campaign.campaign_goal}</p>
     
     {#each campaign.audiences as audience, index}

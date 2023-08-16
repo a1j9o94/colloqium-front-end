@@ -16,9 +16,6 @@
           </div>
         {:else}   
           <div class="text-center text-[14px] leading-[14px] text-black">
-            <a href="/insights">Insights</a>
-          </div>
-          <div class="text-center text-[14px] leading-[14px] text-black">
             <a href="/campaign">Campaigns</a>
           </div>
           <div class="text-center text-[14px] leading-[14px] text-black">
