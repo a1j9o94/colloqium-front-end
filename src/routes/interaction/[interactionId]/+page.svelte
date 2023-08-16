@@ -17,9 +17,40 @@
     });
 </script>
 
-<h1>Interaction: {interaction.id}</h1>
-
+<a href="/campaign/{interaction.campaign_id}/insights">Back to Insights</a>
 <h1>Conversation</h1>
-{#each conversation as message}
-    <p>{message.content}</p>
-{/each}
+<div class="conversation-container">
+    {#each conversation as message}
+        <div class="bubble {message.role}"><p>{message.content}</p></div>
+    {/each}
+</div>
+
+<style>
+    .bubble {
+        border-radius: 15px;
+        padding: 10px;
+        margin: 5px;
+        max-width: 80%;
+        display: inline-block;
+    }
+
+    .user {
+        text-align: right;
+        background-color: #f0f0f0;
+    }
+
+    .assistant {
+        text-align: left;
+        background-color: #d0e5f5;
+    }
+
+    .conversation-container {
+        max-width: 375px; /* iPhone X width */
+        max-height: 812px; /* iPhone X height */
+        border: 2px solid #000;
+        overflow-y: scroll;
+        padding: 20px;
+    }
+
+
+</style>
