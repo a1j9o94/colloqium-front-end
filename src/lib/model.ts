@@ -36,7 +36,7 @@ export interface Interaction {
     campaign_relevance_explanation: string;
     campaign_relevance_summary: string;
     insights_about_issues: string;
-    insights_about_Voter: string;
+    insights_about_voter: string;
 }
 
 export interface Sender {

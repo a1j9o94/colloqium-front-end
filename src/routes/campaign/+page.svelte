@@ -17,7 +17,7 @@ import type { PageData } from './$types';
             <div class="card-body">
                 <h2>{campaign.campaign_name}</h2>
                 <p>{campaign.campaign_prompt}</p>
-                <btn class="btn"><a href="/campaign/{campaign.id}">View Campaign</a></btn>
+                <a href="/campaign/{campaign.id}"><btn class="btn">View Campaign</btn></a>
             </div>
         </div>
     {/each}
