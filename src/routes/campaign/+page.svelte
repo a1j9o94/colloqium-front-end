@@ -1,9 +1,11 @@
 <script lang="ts">
     import AuthCheck from '$lib/components/AuthCheck.svelte';
-import type { PageData } from './$types';
+    import { user } from '$lib/firebase';
+    import type { PageData } from './$types';
     
     export let data: PageData;
     const { campaigns } = data;
+
 </script>
 
 <!-- Path: src/routes/campaign/+layout.svelte -->

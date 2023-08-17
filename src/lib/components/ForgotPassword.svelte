@@ -1,25 +1,19 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
     import { auth } from '$lib/firebase';
-    import { GoogleAuthProvider, createUserWithEmailAndPassword, sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup, updateEmail, updatePassword } from 'firebase/auth';
+    import { GoogleAuthProvider, createUserWithEmailAndPassword, sendPasswordResetEmail, signInWithPopup, updateEmail, updatePassword } from 'firebase/auth';
 
     let email = '';
-    let password = '';
 
     async function handleSubmit() {
-        if(password === '') {
-            alert('Please enter a password');
-            return;
-        }
 
         if(!email) {
             alert('Please enter an email');
             return;
         }
-
         try{
-            await login(email, password);
-            goto('/campaign');
+            await resetPassword(email);
+            goto('/login');
         } catch (error) {
             alert(error.message);
         }
@@ -29,12 +23,8 @@
         const provider = new GoogleAuthProvider();
         const user = await signInWithPopup(auth, provider);
         //reroute to the campaigns page
-        goto('/campaign');
+        goto('/');
         console.log(user);
-    }
-
-    async function login(email: string, password: string) {
-        await signInWithEmailAndPassword(auth, email, password);
     }
 
     async function signUp(email: string, password: string) {
@@ -57,24 +47,19 @@
 
 <main class="card w-4/6 bg-teal-950 text-neutral-content mx-auto">
     <div class="card-body items-center text-center container">
-        <p class="text-error">You are not signed in!</p>
-        <h1>Sign In</h1>
+        <h1>Forgot Password</h1>
         <form>
             <label class="label">
                 <input bind:value={email} type="email" name="email" placeholder="Email" />
             </label>
-            <label class="label">
-                <input bind:value={password} type="password" name="password" placeholder="Password" />
-            </label>
         </form>
         <button class="btn btn-primary" on:click={handleSubmit}>Submit</button>
-        <button on:click={signInWithGoogle} class="btn btn-secondary">Sign in with Google</button>
-        <a href="/forgotpassword" class="text underline">Forgot Password</a>
-        <a href="/signup" class="text underline">Don't have an account? Sign up</a>
+        <a href="/login" class="text underline">Already have an account? Login</a>
     </div>
 </main>
 
 <style>
+
     .container form {
         display: flex;
         flex-direction: column;
