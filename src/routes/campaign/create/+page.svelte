@@ -2,8 +2,8 @@
     import { onMount } from "svelte";
     import { goto } from '$app/navigation';
     import type { Campaign, Sender } from "$lib/model";
-    import { campaignStore } from "$lib/store";
-    import { API_URL, formatDate } from "$lib/utility";
+    import { campaignStore } from "$lib/stores/campaignStore.js";
+    import { API_URL } from "$lib/utility";
   
     export let data;
     
@@ -16,56 +16,101 @@
     let example_interactions = "";
     let sender_id: string | null = null;
     let campaign_end_date: Date = new Date();
+    let localCampaign: Campaign | null;
+    let existingCampaign = false;
+
+    campaignStore.subscribe((campaign) => {
+        campaign = campaign;
+    });
   
     async function handleSubmit() {
-      if (!sender_id) {
-          console.error('No sender selected');
-          return;
-      }
+        if (!sender_id) {
+              console.error('No sender selected');
+              return;
+        }
 
-      let sender: Sender = senders.find(sender => sender.id === sender_id) ? senders.find(sender => sender.id === sender_id) : {} as Sender;
+        let sender: Sender | undefined = senders.find(sender => sender.id === sender_id) ? senders.find(sender => sender.id === sender_id) : {} as Sender;
       
-      const campaign: Campaign = {
-        campaign_name,
-        campaign_prompt,
-        campaign_goal,
-        campaign_fallback,
-        example_interactions,
-        sender,
-        campaign_end_date,
-      };
+        if(!sender) {
+            console.error('No sender selected');
+            return;
+        }
+        if (!localCampaign) {
+            return;
+        }
+        
+        localCampaign.campaign_name = campaign_name;
+        localCampaign.campaign_prompt = campaign_prompt;
+        localCampaign.campaign_goal = campaign_goal;
+        localCampaign.campaign_fallback = campaign_fallback;
+        localCampaign.example_interactions = example_interactions;
+        localCampaign.sender = sender;
+        localCampaign.campaign_end_date = campaign_end_date;
   
         const campaignApiObject = {
-            campaign_name: campaign.campaign_name,
-            campaign_prompt: campaign.campaign_prompt,
-            campaign_goal: campaign.campaign_goal,
-            campaign_fallback: campaign.campaign_fallback,
-            example_interactions: campaign.example_interactions,
-            sender_id: campaign.sender?.id,
-            campaign_end_date: campaign.campaign_end_date,
+            campaign_name: localCampaign.campaign_name,
+            campaign_prompt: localCampaign.campaign_prompt,
+            campaign_goal: localCampaign.campaign_goal,
+            campaign_fallback: localCampaign.campaign_fallback,
+            example_interactions: localCampaign.example_interactions,
+            campaign_end_date: localCampaign.campaign_end_date,
         };
 
-        const res = await fetch(`${API_URL}/campaign`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(campaignApiObject)
-        });
-  
-      const data = await res.json();
-  
-      if (!res.ok) {
-          console.error(data);
-          return;
-      }
-  
-      campaignStore.set(data);
+        if (!existingCampaign) {
+            campaignApiObject['sender_id'] = sender.id;
+            const res = await fetch(`${API_URL}/campaign`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(campaignApiObject)
+            });
+    
+            const data = await res.json();
+    
+            if (!res.ok) {
+                console.error(data);
+                return;
+            }
+
+            campaignStore.set(data.campaign);
+        } else {
+
+            campaignApiObject['campaign_id'] = localCampaign.id;
+            const res = await fetch(`${API_URL}/campaign?campaign_id=${localCampaign.id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(campaignApiObject)
+            });
+    
+            const data = await res.json();
+    
+            if (!res.ok) {
+                console.error(data);
+                return;
+            }
+            campaignStore.set(localCampaign);
+        }
       goto('/campaign/create/audience');
     }
   
     onMount(() => {
-      sender_id = senders[0]?.id;
+        //Load the campaign from the store, and if it has an ID, use it to prepopulate the form
+        campaignStore.subscribe((campaign) => {
+            localCampaign = campaign;
+        });
+        if (localCampaign?.id) {
+            campaign_name = localCampaign.campaign_name;
+            campaign_prompt = localCampaign.campaign_prompt;
+            campaign_goal = localCampaign.campaign_goal;
+            campaign_fallback = localCampaign.campaign_fallback;
+            example_interactions = localCampaign.example_interactions;
+            sender_id = localCampaign.sender?.id;
+            campaign_end_date = new Date(localCampaign.campaign_end_date);
+            existingCampaign = true;
+        }
     });
   </script>
   

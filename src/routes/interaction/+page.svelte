@@ -191,7 +191,7 @@
     }
     
     goto(`${senderId}/confirm_messages`)
-}
+  }
 
 
   function handleChange(event: Event) {

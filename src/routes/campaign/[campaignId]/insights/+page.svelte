@@ -132,14 +132,14 @@
 
     
     <button class="btn btn-primary mb-4" on:click={refreshEvaluations}>Refresh Evaluations</button>
-    <table class="min-w-full bg-base-100 text-base">
+    <table class="min-w-full bg-base-100 text-base table table-zebra">
         <thead>
             <tr>
                 <th class="px-4 py-2">Campaign Relevance Score</th>
                 <th class="px-4 py-2">Relevance Summary</th>
                 <th class="px-4 py-2">Policy Insights</th>
                 <th class="px-4 py-2">Voter Insights</th>
-                <th class="px-4 py-2">Action</th>
+                <th class="px-4 py-2">Conversation</th>
             </tr>
         </thead>
         <tbody>
@@ -150,14 +150,14 @@
                 <td class="px-4 py-2">
                     {#if interaction.insights_about_issues && typeof interaction.insights_about_issues === 'object' && !(interaction.insights_about_issues instanceof String)}
                         {#each Object.entries(interaction.insights_about_issues) as [policy_area, insight]}
-                            <p>{policy_area}: {insight}</p>
+                            <p><span class="font-semibold">{policy_area}</span>: {insight}</p>
                         {/each}
                     {:else}
                         No Policy Insights
                     {/if}
                 </td>
                 <td class="px-4 py-2">{interaction.insights_about_voter}</td>
-                <td class="px-4 py-2"><a href="/interaction/{interaction.id}">View Interaction</a></td>
+                <td class="px-4 py-2 btn btn-secondary"><a href="/interaction/{interaction.id}">View Conversation</a></td>
             </tr>
             {/each}
         </tbody>
