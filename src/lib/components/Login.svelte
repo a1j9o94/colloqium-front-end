@@ -1,10 +1,13 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, afterNavigate } from '$app/navigation';
     import { auth } from '$lib/firebase';
+    import { base } from '$app/paths';
     import { GoogleAuthProvider, createUserWithEmailAndPassword, sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup, updateEmail, updatePassword } from 'firebase/auth';
 
     let email = '';
     let password = '';
+    let previousPage: string = base;
+
 
     async function handleSubmit() {
         if(password === '') {
@@ -19,7 +22,7 @@
 
         try{
             await login(email, password);
-            goto('/campaign');
+            goto(previousPage);
         } catch (error) {
             alert(error.message);
         }
@@ -29,7 +32,7 @@
         const provider = new GoogleAuthProvider();
         const user = await signInWithPopup(auth, provider);
         //reroute to the campaigns page
-        goto('/campaign');
+        goto(previousPage);
         console.log(user);
     }
 
@@ -53,6 +56,9 @@
         await updatePassword(auth.currentUser, password);
     }
 
+    afterNavigate(({ from }) => {
+        previousPage = from?.url.pathname || previousPage;
+    });
 </script>
 
 <main class="card w-4/6 bg-teal-950 text-neutral-content mx-auto">
