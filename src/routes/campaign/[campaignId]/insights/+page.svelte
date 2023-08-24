@@ -71,7 +71,7 @@
         console.log(summaries)
 
         // Filter for interactions where campaign_relevance_score is not null
-        evaluated_interactions = interactions.filter(interaction => interaction.campaign_relevance_score != null);
+        evaluated_interactions = interactions.filter(interaction => interaction.campaign_relevance_score != null && interaction.interaction_status >= 6); // conversation_status >= 6 means the voter has responded to the campaign
         evaluated_interactions.sort((a, b) => b.campaign_relevance_score - a.campaign_relevance_score);
 
 
@@ -101,9 +101,9 @@
 <AuthCheck>
     <!-- Three buttons for "Refresh Evaluations", "Refresh Funnel", "Refresh Insights"-->
     
-    <div id="funnelChart-container">
+    <div class="w-100">
     <h1>Funnel</h1>
-    <div id="funnelChart"></div>
+    <div id="funnelChart" class="w-2/3 mx-auto"></div>
     <btn class="btn btn-primary" on:click={refreshFunnel()}>Refresh Funnel</btn>
     </div>
 
@@ -135,8 +135,8 @@
     <table class="min-w-full bg-base-100 text-base table table-zebra">
         <thead>
             <tr>
-                <th class="px-4 py-2">Campaign Relevance Score</th>
-                <th class="px-4 py-2">Relevance Summary</th>
+                <th class="px-4 py-2">Voter</th>
+                <th class="px-4 py-2">Summary</th>
                 <th class="px-4 py-2">Policy Insights</th>
                 <th class="px-4 py-2">Voter Insights</th>
                 <th class="px-4 py-2">Conversation</th>
@@ -145,36 +145,33 @@
         <tbody>
             {#each evaluated_interactions as interaction}
             <tr>
-                <td class="px-4 py-2">{interaction.campaign_relevance_score}</td>
-                <td class="px-4 py-2">{interaction.campaign_relevance_summary}</td>
+                <td class="px-4 py-2"><div class="h-28 overflow-y-auto">{interaction.voter.voter_name} ({interaction.voter.voter_phone_number})</div></td>
+                <td class="px-4 py-2"><div class="h-28 overflow-y-auto">{interaction.campaign_relevance_summary}</div></td>
                 <td class="px-4 py-2">
-                    {#if interaction.insights_about_issues && typeof interaction.insights_about_issues === 'object' && !(interaction.insights_about_issues instanceof String)}
-                        {#each Object.entries(interaction.insights_about_issues) as [policy_area, insight]}
-                            <p><span class="font-semibold">{policy_area}</span>: {insight}</p>
-                        {/each}
-                    {:else}
-                        No Policy Insights
-                    {/if}
+                    <div class="h-28 overflow-y-auto">
+                        {#if interaction.insights_about_issues && typeof interaction.insights_about_issues === 'object' && !(interaction.insights_about_issues instanceof String)}
+                            {#each Object.entries(interaction.insights_about_issues) as [policy_area, insight]}
+                                <p><span class="font-semibold">{policy_area}</span>: {insight}</p>
+                            {/each}
+                        {:else}
+                            No Policy Insights
+                        {/if}
+                    </div>
                 </td>
-                <td class="px-4 py-2">{interaction.insights_about_voter}</td>
+                <td class="px-4 py-2"><div class="h-28 overflow-y-auto">{interaction.insights_about_voter}</div></td>
                 <td class="px-4 py-2 btn btn-secondary"><a href="/interaction/{interaction.id}">View Conversation</a></td>
             </tr>
             {/each}
         </tbody>
     </table>
+    
 
 
 </AuthCheck>
 
 <style>
-    #funnelChart-container {
-        width: 100%; /* Ensure the parent container takes the full available width */
+    .fixed-row-height {
+      height: 100px; /* You can adjust this value */
+      overflow-y: auto;
     }
-
-    #funnelChart {
-        width: 66.67%; /* 2/3rds of the parent container's width */
-        margin: 0 auto; /* Centering the chart within its parent container */
-    }
-
-
-</style>
+  </style>
