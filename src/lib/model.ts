@@ -46,6 +46,7 @@ export interface Sender {
     sender_schedule: string;
     interactions: Interaction[];
     phone_numbers: string[];  // if PhoneNumber has more properties, create an interface for it.
+    fallback_url: string;
 }
 
 export interface Audience {
@@ -62,8 +63,6 @@ export interface Campaign {
     campaign_name: string;
     campaign_prompt: string;
     campaign_goal: string;
-    campaign_fallback: string;
-    example_interactions: string;
     sender: Sender;
     campaign_end_date: Date;
     campaign_manager_summary: string;

@@ -6,6 +6,7 @@
     import { API_URL } from '$lib/utility.js';
     import { writable } from 'svelte/store';
     import type { Writable } from 'svelte/store';
+    import InteractionConfirmationTable from '$lib/components/InteractionConfirmationTable.svelte';
     
     export let data;
     const { campaign } = data;
@@ -62,6 +63,9 @@
     <h1 class="text-4xl font-bold mb-4 flex justify-center items-center pt-5">{campaign.campaign_name}</h1>
     <a href="/campaign/{campaign.id}/insights" class="btn">Insights</a>
     <p>{campaign.campaign_goal}</p>
+
+
+    <InteractionConfirmationTable campaign_id={campaign.id} />
     
     {#each campaign.audiences as audience, index}
         <div class="collapse bg-base-200 mt-4">

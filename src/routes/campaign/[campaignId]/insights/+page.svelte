@@ -217,8 +217,9 @@
         console.log(summaries)
 
         // Filter for interactions where campaign_relevance_score is not null
-        responded_interactions = interactions.filter(interaction => interaction.campaign_relevance_score != null && interaction.interaction_status >= 6); // conversation_status >= 6 means the voter has responded to the campaign
+        responded_interactions = interactions.filter(interaction => interaction.interaction_status >= 6); // conversation_status >= 6 means the voter has responded to the campaign
         responded_interactions.sort((a, b) => b.campaign_relevance_score - a.campaign_relevance_score);
+        console.log(responded_interactions);
 
         renderChart();
     });

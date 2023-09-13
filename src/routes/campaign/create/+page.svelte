@@ -3,61 +3,99 @@
     import { goto } from '$app/navigation';
     import type { Campaign, Sender } from "$lib/model";
     import { campaignStore } from "$lib/stores/campaignStore.js";
+    import { senderStore } from "$lib/stores/senderStore.js";
     import { API_URL } from "$lib/utility";
-  
-    export let data;
+    import { getCampaignOptions, CampaignOption} from "$lib/campaignOptions";
     
-    const { senders } = data;
-  
     let campaign_name = "";
     let campaign_prompt = "";
     let campaign_goal = "";
     let campaign_fallback = "";
     let example_interactions = "";
-    let sender_id: string | null = null;
+    let localSender: Sender | null = null;
     let campaign_end_date: Date = new Date();
     let localCampaign: Campaign | null;
     let existingCampaign = false;
+    let campaign_options: CampaignOption[] | [] = [];
+    let option_label: string | null = null;
+    let campaign_option: CampaignOption | null = null;
+    let fields: [string, string][] | [] = [];
+    let fieldValues: { [key: string]: string } = {};
+
+    $: { 
+        const selected_option = campaign_options.find(option => option.label === option_label)
+        console.log(selected_option);
+        campaign_option = selected_option ? selected_option : null;
+        if (campaign_option) {
+            fields = campaign_option.fields;
+        }
+    }
 
     campaignStore.subscribe((campaign) => {
         campaign = campaign;
     });
+
+    senderStore.subscribe((sender) => {
+        localSender = sender;
+    });
   
     async function handleSubmit() {
-        if (!sender_id) {
-              console.error('No sender selected');
-              return;
+
+        console.log(fieldValues)
+
+        if (!localSender) {
+            console.error('No sender selected');
+            return;
         }
 
-        let sender: Sender | undefined = senders.find(sender => sender.id === sender_id) ? senders.find(sender => sender.id === sender_id) : {} as Sender;
-      
-        if(!sender) {
+        if (!localSender.id) {
+            console.error('No sender id');
+            return;
+        }
+
+        //populate the local Sender object with the sender object form the api
+        const response = await fetch(`${API_URL}/sender?sender_id=${localSender.id}`);
+        const data = await response.json();
+        localSender = data.sender;
+
+        if (!localSender) {
+            console.error('No sender found');
+            return;
+        }
+
+
+        console.log(localSender);
+
+        if(!localSender) {
             console.error('No sender selected');
             return;
         }
         if (!localCampaign) {
             return;
         }
+
+        if(!campaign_option) {
+            console.error('No campaign option selected');
+            return;
+        }
+
+        campaign_option.prepareCampaign(localSender, fieldValues);
         
-        localCampaign.campaign_name = campaign_name;
-        localCampaign.campaign_prompt = campaign_prompt;
-        localCampaign.campaign_goal = campaign_goal;
-        localCampaign.campaign_fallback = campaign_fallback;
-        localCampaign.example_interactions = example_interactions;
-        localCampaign.sender = sender;
-        localCampaign.campaign_end_date = campaign_end_date;
+        localCampaign.campaign_name = campaign_option.getCampaignName();
+        localCampaign.campaign_prompt = campaign_option.getCampaignPrompt();
+        localCampaign.campaign_goal = campaign_option.getCampaignGoal();
+        localCampaign.sender = localSender;
+        localCampaign.campaign_end_date = campaign_option.getCampaignEndDate();
   
         const campaignApiObject = {
             campaign_name: localCampaign.campaign_name,
             campaign_prompt: localCampaign.campaign_prompt,
             campaign_goal: localCampaign.campaign_goal,
-            campaign_fallback: localCampaign.campaign_fallback,
-            example_interactions: localCampaign.example_interactions,
             campaign_end_date: localCampaign.campaign_end_date,
         };
 
         if (!existingCampaign) {
-            campaignApiObject['sender_id'] = sender.id;
+            campaignApiObject['sender_id'] = localSender.id;
             const res = await fetch(`${API_URL}/campaign`, {
             method: "POST",
             headers: {
@@ -101,54 +139,71 @@
         campaignStore.subscribe((campaign) => {
             localCampaign = campaign;
         });
+        campaign_options = getCampaignOptions();
+        console.log(campaign_options);
         if (localCampaign?.id) {
+
             campaign_name = localCampaign.campaign_name;
             campaign_prompt = localCampaign.campaign_prompt;
             campaign_goal = localCampaign.campaign_goal;
             campaign_fallback = localCampaign.campaign_fallback;
             example_interactions = localCampaign.example_interactions;
-            sender_id = localCampaign.sender?.id;
+            localSender = localCampaign.sender;
             campaign_end_date = new Date(localCampaign.campaign_end_date);
             existingCampaign = true;
+
+        }else {
+            existingCampaign = false;
         }
+        option_label = campaign_options[0].label;
     });
   </script>
   
   <div class="flex flex-col justify-center items-center h-screen">
     <form class="w-full max-w-lg" on:submit|preventDefault={handleSubmit}>
-        <div class="flex flex-wrap -mx-3 mb-6">
-            <div class="w-full px-3">
-                <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="campaign_name">Campaign Name:</label>
-                <input id="campaign_name" type="text" class="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white" bind:value={campaign_name} required>
-            </div>
-            <div class="w-full px-3">
-                <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="campaign_prompt">Campaign Prompt:</label>
-                <textarea id="campaign_prompt" class="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white" bind:value={campaign_prompt} required></textarea>
-            </div>
-            <div class="w-full px-3">
-                <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="sender_id">Sender:</label>
-                <select id="sender_id" class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" bind:value={sender_id} required>
-                    {#each senders as sender (sender.id)}
-                        <option value={sender.id}>{sender.sender_name}</option>
-                    {/each}
-                </select>
-            </div>
-            <div class="w-full px-3">
-                <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="campaign_goal">Campaign Goal:</label>
-                <input id="campaign_goal" type="text" class="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white" bind:value={campaign_goal} required>
-            </div>
-            <div class="w-full px-3">
-                <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="campaign_fallback">Campaign Fallback:</label>
-                <input id="campaign_fallback" type="text" class="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white" bind:value={campaign_fallback} required>
-            </div>
-            <div class="w-full px-3">
-                <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="example_interactions">Example Interactions:</label>
-                <input id="example_interactions" type="text" class="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white" bind:value={example_interactions} required>
-            </div>
-            <div class="w-full px-3">
-                <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="campaign_end_date">Campaign End Date:</label>
-                <input id="campaign_end_date" type="date" class="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white" bind:value={campaign_end_date} required>
-            </div>
+        <div class="flex flex-wrap -mx-3 mb-6"> 
+
+            {#if campaign_option}
+
+                <div class="w-full px-3">
+                    <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="option_label">Campaign Option:</label>
+                    <select id="option_label" class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" bind:value={option_label} required>
+                        {#each campaign_options as option (option.label)}
+                            <option value={option.label}>{option.label}</option>
+                        {/each}
+                    </select>
+                </div>
+
+                {#each campaign_option.fields as field }
+                    <div class="w-full px-3">
+                        <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for={field[0]}>{field[0]}</label>
+                    </div>
+
+                    {#if field[1] == "text_input"}
+                        <div class="w-full px-3">
+                            <!-- Bind input to fieldValues object -->
+                            <input id={field[0]} type="text" bind:value={fieldValues[field[0]]} class="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white">
+                        </div>
+                    {:else if field[1] == "date_input"}
+                        <div class="w-full px-3">
+                            <!-- Bind input to fieldValues object -->
+                            <input id={field[0]} type="date" bind:value={fieldValues[field[0]]} class="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white">
+                        </div>
+                    {:else if field[1] == "text_area"}
+                        <div class="w-full px-3">
+                            <!-- Bind input to fieldValues object -->
+                            <textarea id={field[0]} bind:value={fieldValues[field[0]]} class="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"></textarea>
+                        </div>
+
+                    {:else }
+                        <div class="w-full px-3">
+                            <!-- Bind input to fieldValues object -->
+                            <input id={field[0]} type="text" bind:value={fieldValues[field[0]]} class="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white">
+                        </div>
+                    {/if}
+                {/each}
+            {/if}
+
             <div class="w-full px-3">
                 <button type="submit" class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Create Campaign</button>
             </div>

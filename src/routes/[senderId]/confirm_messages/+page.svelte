@@ -1,6 +1,6 @@
 <script>
     import { onMount, onDestroy } from 'svelte';
-    import io from 'socket.io-client';
+    import { io } from 'socket.io-client';
     import { API_URL } from '$lib/utility';
     import { writable } from 'svelte/store';
     import AuthCheck from '$lib/components/AuthCheck.svelte';
