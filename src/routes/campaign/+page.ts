@@ -1,34 +1,38 @@
 import type { PageLoad } from './$types';
 import { API_URL } from '$lib/utility';
 import type { Campaign } from '$lib/model';
+import { userData } from '$lib/firebase'; // Import userData store
 
-export const load = (async () => {
-
-    const fetchCampaigns = async (): Promise<Campaign[]> => {
+export const load: PageLoad = async () => {
+  return new Promise((resolve, reject) => {
+    const unsubscribe = userData.subscribe(async ($userData) => {
+      if ($userData) {
         try {
-            // Fetching the data from the API
-            const response = await fetch(`${API_URL}/campaign`, {
+          let campaigns: Campaign[] = [];
+
+          console.log($userData);
+
+          for (const sender of $userData.associated_senders) {
+            const response = await fetch(`${API_URL}/campaign?sender_id=${sender}`, {
               method: 'GET'
             });
-        
-            // Error handling if the fetch fails
+
             if (!response.ok) {
               throw new Error(`HTTP error! status: ${response.status}`);
             }
-        
-            // Extracting the JSON from the response
+
             const jsonResponse = await response.json();
-        
-            // Assuming 'senders' is the key in the returned JSON that contains the list of senders
-            return jsonResponse.campaigns as Promise<Campaign[]>;
-        
-          } catch (error) {
-            console.error("Error fetching campaigns: ", error);
-            return []; // Return an empty array if there was an error fetching the data
+            campaigns = [...campaigns, ...jsonResponse.campaigns];
           }
-    }
-    
-    return {
-        campaigns: await fetchCampaigns()
-    };
-}) satisfies PageLoad;
+
+          resolve({ campaigns }); // Resolve the promise with the fetched campaigns
+        } catch (error) {
+          reject(error); // Reject the promise if there was an error
+        }
+      }
+    });
+
+    // Unsubscribe when the promise is settled
+    Promise.resolve().finally(() => unsubscribe());
+  });
+};

@@ -1,10 +1,14 @@
 <script lang="ts">
     import AuthCheck from '$lib/components/AuthCheck.svelte';
-    import { user } from '$lib/firebase';
     import type { PageData } from './$types';
+    import { onMount } from 'svelte';
     
     export let data: PageData;
     const { campaigns } = data;
+
+    onMount(() => {
+        console.log(campaigns);
+    });
 
 </script>
 

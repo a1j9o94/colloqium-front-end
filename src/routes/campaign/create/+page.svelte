@@ -3,7 +3,7 @@
     import { goto } from '$app/navigation';
     import type { Campaign, Sender } from "$lib/model";
     import { campaignStore } from "$lib/stores/campaignStore.js";
-    import { senderStore } from "$lib/stores/senderStore.js";
+    import { userData } from "$lib/firebase";
     import { API_URL } from "$lib/utility";
     import { getCampaignOptions, CampaignOption} from "$lib/campaignOptions";
     
@@ -11,7 +11,6 @@
     let campaign_prompt = "";
     let campaign_goal = "";
     let campaign_fallback = "";
-    let example_interactions = "";
     let localSender: Sender | null = null;
     let campaign_end_date: Date = new Date();
     let localCampaign: Campaign | null;
@@ -35,8 +34,14 @@
         campaign = campaign;
     });
 
-    senderStore.subscribe((sender) => {
-        localSender = sender;
+    userData.subscribe((user) => {
+        if (user) {
+            if(localSender == null)
+                localSender = {id: ""} as Sender;
+
+            if (user.active_sender)
+                localSender.id = user.active_sender;
+        }
     });
   
     async function handleSubmit() {
@@ -146,11 +151,11 @@
             campaign_name = localCampaign.campaign_name;
             campaign_prompt = localCampaign.campaign_prompt;
             campaign_goal = localCampaign.campaign_goal;
-            campaign_fallback = localCampaign.campaign_fallback;
-            example_interactions = localCampaign.example_interactions;
             localSender = localCampaign.sender;
             campaign_end_date = new Date(localCampaign.campaign_end_date);
             existingCampaign = true;
+
+            campaign_fallback = localSender.fallback_url;
 
         }else {
             existingCampaign = false;

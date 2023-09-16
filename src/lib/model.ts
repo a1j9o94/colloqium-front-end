@@ -47,6 +47,7 @@ export interface Sender {
     interactions: Interaction[];
     phone_numbers: string[];  // if PhoneNumber has more properties, create an interface for it.
     fallback_url: string;
+    example_interactions: string;
 }
 
 export interface Audience {
