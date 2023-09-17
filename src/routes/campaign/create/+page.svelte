@@ -171,8 +171,9 @@
             {#if campaign_option}
 
                 <div class="w-full px-3">
-                    <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for="option_label">Campaign Option:</label>
-                    <select id="option_label" class="block appearance-none w-full bg-gray-200 border border-gray-200 text-gray-700 py-3 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" bind:value={option_label} required>
+                    <label class="block uppercase tracking-wide :w
+                     text-xs font-bold mb-2" for="option_label">Campaign Option:</label>
+                    <select id="option_label" class="block appearance-none w-full py-3 px-4 pr-8 bg-gray-200 rounded leading-tight focus:outline-none focus:bg-white" bind:value={option_label} required>
                         {#each campaign_options as option (option.label)}
                             <option value={option.label}>{option.label}</option>
                         {/each}
@@ -181,29 +182,29 @@
 
                 {#each campaign_option.fields as field }
                     <div class="w-full px-3">
-                        <label class="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2" for={field[0]}>{field[0]}</label>
+                        <label class="block uppercase tracking-wide  text-xs font-bold mb-2" for={field[0]}>{field[0]}</label>
                     </div>
 
                     {#if field[1] == "text_input"}
                         <div class="w-full px-3">
                             <!-- Bind input to fieldValues object -->
-                            <input id={field[0]} type="text" bind:value={fieldValues[field[0]]} class="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white">
+                            <input id={field[0]} type="text" bind:value={fieldValues[field[0]]} class="appearance-none block w-full bg-gray-200  border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white">
                         </div>
                     {:else if field[1] == "date_input"}
                         <div class="w-full px-3">
                             <!-- Bind input to fieldValues object -->
-                            <input id={field[0]} type="date" bind:value={fieldValues[field[0]]} class="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white">
+                            <input id={field[0]} type="date" bind:value={fieldValues[field[0]]} class="appearance-none block w-full bg-gray-200  border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white">
                         </div>
                     {:else if field[1] == "text_area"}
                         <div class="w-full px-3">
                             <!-- Bind input to fieldValues object -->
-                            <textarea id={field[0]} bind:value={fieldValues[field[0]]} class="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"></textarea>
+                            <textarea id={field[0]} bind:value={fieldValues[field[0]]} class="appearance-none block w-full bg-gray-200  border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"></textarea>
                         </div>
 
                     {:else }
                         <div class="w-full px-3">
                             <!-- Bind input to fieldValues object -->
-                            <input id={field[0]} type="text" bind:value={fieldValues[field[0]]} class="appearance-none block w-full bg-gray-200 text-gray-700 border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white">
+                            <input id={field[0]} type="text" bind:value={fieldValues[field[0]]} class="appearance-none block w-full bg-gray-200  border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white">
                         </div>
                     {/if}
                 {/each}

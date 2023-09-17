@@ -17,6 +17,7 @@
 	"devDependencies": {
 		"@playwright/test": "^1.28.1",
 		"@sveltejs/adapter-auto": "^2.0.0",
+		"@sveltejs/adapter-static": "^2.0.3",
 		"@sveltejs/adapter-vercel": "^1.0.0-next.88",
 		"@sveltejs/kit": "^1.20.4",
 		"@typescript-eslint/eslint-plugin": "^5.45.0",
@@ -30,6 +31,7 @@
 		"firebase": "^10.0.0",
 		"papaparse": "^5.4.1",
 		"postcss": "^8.4.24",
+		"postcss-load-config": "^4.0.1",
 		"prettier": "^2.8.0",
 		"prettier-plugin-svelte": "^2.10.1",
 		"socket.io-client": "^4.7.1",
