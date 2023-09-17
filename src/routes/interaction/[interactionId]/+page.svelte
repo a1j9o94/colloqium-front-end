@@ -21,7 +21,7 @@
 <h1>Conversation</h1>
 <div class="conversation-container">
     {#each conversation as message}
-        <div class="bubble {message.role}"><p>{message.content}</p></div>
+        <div class="bubble {message.role}"><p class="text-black">{message.content}</p></div>
     {/each}
 </div>
 
