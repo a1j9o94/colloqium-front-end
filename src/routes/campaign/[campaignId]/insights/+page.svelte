@@ -101,7 +101,7 @@
             bindto: '#funnelChart', // make sure to bind to an element with this ID
             data: {
                 columns: [
-                    ['Campaign Funnel', campaign.interactions_sent, campaign.interactions_delivered, campaign.interactions_responded, campaign.interactions_converted]
+                    ['Campaign', campaign.interactions_sent, campaign.interactions_delivered, campaign.interactions_responded, campaign.interactions_converted]
                 ],
                 type: 'bar'
             },
@@ -116,16 +116,13 @@
                     categories: ['Sent', 'Delivered', 'Responded', 'Converted']
                 }
             },
-            //tooltip is not working because the formatting of the chart is being overwritten to have white text from somewhere. Need to figure out how to override
             tooltip: {
-                show: false,
                 format: {
-                    // grouped: false,
-                    // title: function (d) { return categories[d]; },
-                    // value: function (value, ratio, id, index) {
-                    //     console.log(value);
-                    //     return value;
-                    // }
+                    title: function (d) { return categories[d]; },
+                    name: function (name, ratio, id, index) { return ""; },
+                    value: function (value, ratio, id, index) {
+                        return value;
+                    }
                 }
             }
         });
@@ -323,7 +320,7 @@
                                 <td class="px-4 py-2"><div class="h-28 overflow-y-auto">{interaction.insights_about_voter}</div></td>
                                 <td class="px-4 py-2 btn btn-secondary m-2"><a href="/interaction/{interaction.id}">View Conversation</a></td> 
                                 <!-- Add a data attribute to store the interaction ID -->
-                                <td class=" btn btn-secondary m-2" data-interaction-id={interaction.id} on:click={singleRefreshRequest}>Refresh Single Evaluation</td>
+                                <td class=" btn btn-secondary mt-2 mx-2" data-interaction-id={interaction.id} on:click={singleRefreshRequest}>Refresh Evaluation</td>
                             {/if}
                         </tr>
                     {/each}
@@ -334,3 +331,11 @@
 
     </AuthCheck>
 </div>
+
+<style>
+    :global(.c3-tooltip-container .c3-tooltip-name--Campaign-Funnel),
+    :global(.c3-tooltip-container .name),
+    :global(.c3-tooltip-container .value) {
+        color: #000000 !important;
+    }
+</style>
