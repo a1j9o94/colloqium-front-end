@@ -95,15 +95,13 @@
 
         const object = await import('c3');
         const c3 = object.default;
+        const categories = ['Sent', 'Delivered', 'Responded', 'Converted'];
 
         var chart = c3.generate({
             bindto: '#funnelChart', // make sure to bind to an element with this ID
             data: {
                 columns: [
-                    ['Sent', campaign.interactions_sent],
-                    ['Delivered', campaign.interactions_delivered],
-                    ['Responded', campaign.interactions_responded],
-                    ['Converted', campaign.interactions_converted]
+                    ['Campaign Funnel', campaign.interactions_sent, campaign.interactions_delivered, campaign.interactions_responded, campaign.interactions_converted]
                 ],
                 type: 'bar'
             },
@@ -111,8 +109,27 @@
                 width: {
                     ratio: 0.5
                 }
+            },
+            axis: {
+                x: {
+                    type: 'category',
+                    categories: ['Sent', 'Delivered', 'Responded', 'Converted']
+                }
+            },
+            //tooltip is not working because the formatting of the chart is being overwritten to have white text from somewhere. Need to figure out how to override
+            tooltip: {
+                show: false,
+                format: {
+                    // grouped: false,
+                    // title: function (d) { return categories[d]; },
+                    // value: function (value, ratio, id, index) {
+                    //     console.log(value);
+                    //     return value;
+                    // }
+                }
             }
         });
+        console.log(chart);
     }
 
     onMount(async () => {
@@ -222,94 +239,98 @@
         console.log(responded_interactions);
 
         renderChart();
-    });
 
-    onDestroy(() => {
-        socket?.disconnect();
+        return () => {
+            socket?.disconnect();
+        };
     });
 </script>
 
-<AuthCheck>
-    <!-- Three buttons for "Refresh Evaluations", "Refresh Funnel", "Refresh Insights"-->
-    
-    <div class="w-100">
-    <h1>Funnel</h1>
-    {#if funnelLoading}
-        <span class="loading loading-spinner loading-lg h-max"></span>
-    {:else}
-        <div id="funnelChart" class="w-2/3 mx-auto"></div>
-    {/if}
-    
-    <btn class="btn btn-primary" on:click={refreshFunnel}>Refresh Funnel</btn>
-    </div>
-
-    <div class="p-20">
-        <h1 class="text-lg font-bold mb-2">Campaign Summaries</h1>
-        {#if insightsLoading}
+<div class="px-20">
+    <AuthCheck>
+        
+        <!-- Three buttons for "Refresh Evaluations", "Refresh Funnel", "Refresh Insights"-->
+        
+        <div class="w-full">
+        <h1>Funnel</h1>
+        {#if funnelLoading}
             <span class="loading loading-spinner loading-lg h-max"></span>
         {:else}
-            {#each summaries as summary}
-                <div class="mb-4">
-                    <h2 class="text-md font-semibold">{summary.title}</h2>
-                    <p class="text-sm">{summary.content}</p>
-                </div>
-            {/each}
-        
-            <!-- Check if campaign.policy_insights is a string. If so, do not show it -->
-            {#if campaign.policy_insights && typeof campaign.policy_insights === 'object' && !(campaign.policy_insights instanceof String)}
-                <div class="mt-6">
-                    <h2 class="text-lg font-bold mb-2">Policy Insights</h2>
-                    {#each Object.entries(campaign.policy_insights) as [policy_area, insight]}
-                    <p class="text-md"><span class="font-semibold">{policy_area}:</span> {insight}</p>
-                    {/each}
-                </div>
-            {/if}
+            <div id="funnelChart" class="w-2/3 mx-auto"></div>
         {/if}
-        <button class="btn btn-primary mt-4" on:click={refreshInsights}>Refresh Insights</button>
-    </div>
-    
+        
+        <btn class="btn btn-primary" on:click={refreshFunnel}>Refresh Funnel</btn>
+        </div>
 
-    
-    <button class="btn btn-primary mb-4" on:click={refreshEvaluations}>Refresh Evaluations</button>
-    <table class="min-w-full bg-base-100 text-base table table-zebra">
-        <thead>
-            <tr>
-                <th class="px-4 py-2">Voter</th>
-                <th class="px-4 py-2">Summary</th>
-                <th class="px-4 py-2">Policy Insights</th>
-                <th class="px-4 py-2">Voter Insights</th>
-                <th class="px-4 py-2">Conversation</th>
-            </tr>
-        </thead>
-        <tbody>
-            {#each responded_interactions as interaction}
-                <tr>
-                    {#if interaction.loading}
-                        <span class="loading loading-spinner loading-md h-28"></span>
-                    {:else}
-                        <td class="px-4 py-2"><div class="h-28 overflow-y-auto">{interaction.voter.voter_name} ({interaction.voter.voter_phone_number})</div></td>
-                        <td class="px-4 py-2"><div class="h-28 overflow-y-auto">{interaction.campaign_relevance_summary}</div></td>
-                        <td class="px-4 py-2">
-                            <div class="h-28 overflow-y-auto">
-                                {#if interaction.insights_about_issues && typeof interaction.insights_about_issues === 'object' && !(interaction.insights_about_issues instanceof String)}
-                                    {#each Object.entries(interaction.insights_about_issues) as [policy_area, insight]}
-                                        <p><span class="font-semibold">{policy_area}</span>: {insight}</p>
-                                    {/each}
-                                {:else}
-                                    No Policy Insights
-                                {/if}
-                            </div>
-                        </td>
-                        <td class="px-4 py-2"><div class="h-28 overflow-y-auto">{interaction.insights_about_voter}</div></td>
-                        <td class="px-4 py-2 btn btn-secondary"><a href="/interaction/{interaction.id}">View Conversation</a></td> 
-                        <!-- Add a data attribute to store the interaction ID -->
-                        <td class=" btn btn-secondary mt-1 pt-0" data-interaction-id={interaction.id} on:click={singleRefreshRequest}>Refresh Single Evaluation</td>
-                    {/if}
-                </tr>
-            {/each}
-        </tbody>
-    </table>
-    
+        <div class="pt-10">
+            <h1 class="text-lg font-bold mb-2">Campaign Summaries</h1>
+            {#if insightsLoading}
+                <span class="loading loading-spinner loading-lg h-max"></span>
+            {:else}
+                {#each summaries as summary}
+                    <div class="mb-4">
+                        <h2 class="text-md font-semibold">{summary.title}</h2>
+                        <p class="text-sm">{summary.content}</p>
+                    </div>
+                {/each}
+            
+                <!-- Check if campaign.policy_insights is a string. If so, do not show it -->
+                {#if campaign.policy_insights && typeof campaign.policy_insights === 'object' && !(campaign.policy_insights instanceof String)}
+                    <div class="mt-6">
+                        <h2 class="text-lg font-bold mb-2">Policy Insights</h2>
+                        {#each Object.entries(campaign.policy_insights) as [policy_area, insight]}
+                        <p class="text-md"><span class="font-semibold">{policy_area}:</span> {insight}</p>
+                        {/each}
+                    </div>
+                {/if}
+            {/if}
+            <button class="btn btn-primary mt-4" on:click={refreshInsights}>Refresh Insights</button>
+        </div>
+        
+
+        
+        <div class="pt-10">
+            <button class="btn btn-primary mb-4" on:click={refreshEvaluations}>Refresh Evaluations</button>
+            <table class="min-w-full bg-base-100 text-base table table-zebra">
+                <thead>
+                    <tr>
+                        <th class="px-4 py-2">Voter</th>
+                        <th class="px-4 py-2">Summary</th>
+                        <th class="px-4 py-2">Policy Insights</th>
+                        <th class="px-4 py-2">Voter Insights</th>
+                        <th class="px-4 py-2">Conversation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {#each responded_interactions as interaction}
+                        <tr>
+                            {#if interaction.loading}
+                                <span class="loading loading-spinner loading-md h-28"></span>
+                            {:else}
+                                <td class="px-4 py-2"><div class="h-28 overflow-y-auto">{interaction.voter.voter_name} ({interaction.voter.voter_phone_number})</div></td>
+                                <td class="px-4 py-2"><div class="h-28 overflow-y-auto">{interaction.campaign_relevance_summary}</div></td>
+                                <td class="px-4 py-2">
+                                    <div class="h-28 overflow-y-auto">
+                                        {#if interaction.insights_about_issues && typeof interaction.insights_about_issues === 'object' && !(interaction.insights_about_issues instanceof String)}
+                                            {#each Object.entries(interaction.insights_about_issues) as [policy_area, insight]}
+                                                <p><span class="font-semibold">{policy_area}</span>: {insight}</p>
+                                            {/each}
+                                        {:else}
+                                            No Policy Insights
+                                        {/if}
+                                    </div>
+                                </td>
+                                <td class="px-4 py-2"><div class="h-28 overflow-y-auto">{interaction.insights_about_voter}</div></td>
+                                <td class="px-4 py-2 btn btn-secondary m-2"><a href="/interaction/{interaction.id}">View Conversation</a></td> 
+                                <!-- Add a data attribute to store the interaction ID -->
+                                <td class=" btn btn-secondary m-2" data-interaction-id={interaction.id} on:click={singleRefreshRequest}>Refresh Single Evaluation</td>
+                            {/if}
+                        </tr>
+                    {/each}
+                </tbody>
+            </table>
+        </div>
 
 
-</AuthCheck>
+    </AuthCheck>
+</div>

@@ -27,8 +27,12 @@ export const load: PageLoad = async () => {
 
           resolve({ campaigns }); // Resolve the promise with the fetched campaigns
         } catch (error) {
+          console.log(error);
           reject(error); // Reject the promise if there was an error
         }
+      } else {
+        console.log('rejecting');
+        reject('No user data');
       }
     });
 

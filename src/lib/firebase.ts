@@ -82,10 +82,7 @@ async function fetchUserData(user: User | null): Promise<UserData | null>{
 
 export const userData: Readable<UserData> = derived(user, ($user, set) => {
   (async () => {
-    console.log('fetching user data');
-    console.log($user);
     const data = await fetchUserData($user);
-    console.log(data);
     if(data){
       set(data);
     } else {

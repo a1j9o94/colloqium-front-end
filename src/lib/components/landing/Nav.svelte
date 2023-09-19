@@ -118,10 +118,9 @@
       {:else}
         <li class="mr-3">
           <!-- svelte-ignore a11y-invalid-attribute -->
-          <a
-            class="inline-block text-black no-underline hover:text-gray-800 hover:text-underline py-2 px-4"
-            href="/campaign">Campaigns</a
-          >
+          <a class="inline-block text-black no-underline hover:text-gray-800 hover:text-underline py-2 px-4" href="/campaign" >
+              Campaigns
+          </a>
         </li>
         <li class="mr-3">
           <!-- svelte-ignore a11y-invalid-attribute -->
