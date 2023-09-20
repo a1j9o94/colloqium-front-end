@@ -79,99 +79,124 @@
 
         isLoading = true;
         //check if a csv was submitted by seeing the voters array is empty
-        if (voters.length == 0) {
-            console.error("No new voters were submitted");
-            isLoading = false;
-            goto(`/campaign/create/confirmation`);
-        }
+        if (voters.length != 0) {
         
-        //create a new audience with the voters
-        let audienceResponse = await fetch(`${API_URL}/audience`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                audience_name: audienceName,
-                sender_id: localCampaign?.sender.id,
-                audience_information: "This is an audience for the campaign " + localCampaign?.campaign_name
-            })
-        });
+            //create a new audience with the voters
+            let audienceResponse = await fetch(`${API_URL}/audience`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    audience_name: audienceName,
+                    sender_id: localCampaign?.sender.id,
+                    audience_information: "This is an audience for the campaign " + localCampaign?.campaign_name
+                })
+            });
 
-        if (audienceResponse && !audienceResponse.ok) {
-            console.error(`Error creating audience for ${localCampaign?.campaign_name}`);
-            isLoading = false;
-            return;
-        }
-
-        // At this point, audience has been created
-        const audienceData = await audienceResponse.json();
-        const audienceId = audienceData['audience']["id"];
-
-        //create an array that will hold all of the voter ids for the audience
-        let voterIds = [];
-
-        for (let voter of voters) {
-            
-            const formattedPhoneNumber = formatPhoneNumber(voter["voter_phone_number"]); 
-
-            let voterResponse = await fetch(`${API_URL}/voter?voter_phone_number=${formattedPhoneNumber}`);
-
-            if (voterResponse) {
-                if (!voterResponse.ok) {
-                    let newvoter = {
-                        "voter_name": voter["voter_name"],
-                        "voter_phone_number": formattedPhoneNumber,
-                        "voter_profile": voter["voter_profile"]
-                    };
-
-                    voterResponse = await fetch(`${API_URL}/voter`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(newvoter)
-                    });
-
-                    if (voterResponse && !voterResponse.ok) {
-                        console.error(`Error creating voter ${newvoter["voter_name"]}`);
-                        continue;
-                    }
-                }
-
-                // At this point, voter either existed or has been created
-                const voterData = await voterResponse.json();
-                const voterId = voterData['voter']["id"];
-
-                // Add voter to audience
-                voterIds.push(voterId);
-
-                
-            } else {
-                console.error(`Error fetching voter ${formattedPhoneNumber}`);
+            if (audienceResponse && !audienceResponse.ok) {
+                console.error(`Error creating audience for ${localCampaign?.campaign_name}`);
+                isLoading = false;
+                return;
             }
 
-        }
-        let audience = {
-                        audience_id: audienceId,
-                        voters: voterIds,
-                        campaigns: [localCampaign?.id]
-        };
+            // At this point, audience has been created
+            const audienceData = await audienceResponse.json();
+            const audienceId = audienceData['audience']["id"];
 
-        //create a PUT request to the audience endpoint to add the voters to the audience
-        let audienceUpdateResponse = await fetch(`${API_URL}/audience`, {
-            method: 'PUT',
-            headers: {
-            'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(audience)
-        });
+            //create an array that will hold all of the voter ids for the audience
+            let voterIds = [];
 
-        if (audienceUpdateResponse && !audienceUpdateResponse.ok) {
-            console.error(`Error updating audience for ${localCampaign?.campaign_name}`);
-            isLoading = false;
-            return;
+            for (let voter of voters) {
+                
+                const formattedPhoneNumber = formatPhoneNumber(voter["voter_phone_number"]); 
+
+                let voterResponse = await fetch(`${API_URL}/voter?voter_phone_number=${formattedPhoneNumber}`);
+
+                if (voterResponse) {
+                    if (!voterResponse.ok) {
+                        let newvoter = {
+                            "voter_name": voter["voter_name"],
+                            "voter_phone_number": formattedPhoneNumber,
+                            "voter_profile": voter["voter_profile"]
+                        };
+
+                        voterResponse = await fetch(`${API_URL}/voter`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(newvoter)
+                        });
+
+                        if (voterResponse && !voterResponse.ok) {
+                            console.error(`Error creating voter ${newvoter["voter_name"]}`);
+                            continue;
+                        }
+                    }
+
+                    // At this point, voter either existed or has been created
+                    const voterData = await voterResponse.json();
+                    const voterId = voterData['voter']["id"];
+
+                    // Add voter to audience
+                    voterIds.push(voterId);
+
+                    
+                } else {
+                    console.error(`Error fetching voter ${formattedPhoneNumber}`);
+                }
+
+            }
+            let audience = {
+                            audience_id: audienceId,
+                            voters: voterIds,
+                            campaigns: [localCampaign?.id]
+            };
+
+            //create a PUT request to the audience endpoint to add the voters to the audience
+            let audienceUpdateResponse = await fetch(`${API_URL}/audience`, {
+                method: 'PUT',
+                headers: {
+                'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(audience)
+            });
+
+            if (audienceUpdateResponse && !audienceUpdateResponse.ok) {
+                console.error(`Error updating audience for ${localCampaign?.campaign_name}`);
+                isLoading = false;
+                return;
+            }
         }
+
+        console.log("Campaign audiences:");
+        console.log(campaignAudiences);
+        //create a PUT request to the audience endpoint for each audience in campaign audiences the put request needs the audience id and a campaigns array with this campaign id
+        for (let audience of campaignAudiences) {
+            
+            console.log("Audience:");
+            console.log(audience);
+            const request_body = JSON.stringify({
+                audience_id: audience, //audience.id,
+                campaigns: [localCampaign?.id]
+            });
+            console.log("Request body:");
+            console.log(request_body);
+            let audienceUpdateResponse = await fetch(`${API_URL}/audience`, {
+                method: 'PUT',
+                headers: {
+                'Content-Type': 'application/json'
+                },
+                body: request_body
+            });
+
+            if (audienceUpdateResponse && !audienceUpdateResponse.ok) {
+                console.error(`Error updating audience for ${localCampaign?.campaign_name}`);
+                continue;
+            }
+        }
+
 
         // At this point, audience has been updated
         //call the interaction route with a post including the campaign id and interaction type to generate the messages
@@ -191,6 +216,8 @@
             isLoading = false;
             return;
         }
+
+        isLoading = false;
         
         goto(`/campaign/create/confirmation`);
     }
@@ -198,6 +225,21 @@
 
 <!-- Path: src/routes/campaign/audience/+page.svelte -->
 <h1>Choose Audience</h1>
+
+
+
+
+<h2>Existing Audiences</h2>
+<ul>
+    {#each senderAudiences as audience (audience.id)}
+        <li>
+            <label>
+                <input type="checkbox" bind:group={campaignAudiences} value={audience.id}>
+                {audience.audience_name}
+            </label>
+        </li>
+    {/each}
+</ul>
 
 <div class="mb-5">
     <label for="audienceName" class="block mb-2 text-sm">Audience Name</label>
@@ -214,3 +256,5 @@
         Submit
     {/if}
 </button>
+
+
