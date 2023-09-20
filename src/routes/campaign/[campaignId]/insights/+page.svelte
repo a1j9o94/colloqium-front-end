@@ -283,10 +283,7 @@
         <div class="pt-10">
             {#if insightsLoading}
                 <span class="loading loading-spinner loading-lg h-max"></span>
-            {:else}
-
-            <Cards title="Campaign Summaries" cards={summaries.map(summary => ({ title: summary.title, content: summary.content }))}/>    
-            
+            {:else} 
                 <!-- Check if campaign.policy_insights is a string. If so, do not show it -->
                 {#if campaign.policy_insights && typeof campaign.policy_insights === 'object' && !(campaign.policy_insights instanceof String)}
                     
