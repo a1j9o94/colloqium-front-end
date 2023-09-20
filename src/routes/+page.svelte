@@ -11,7 +11,7 @@
 
 	<Features />
 
-	<Cards title="We can help you ..."
+	<div class="bg-white border-b"><Cards title="We can help you ..."
 	
 		cards={[
 			{
@@ -27,7 +27,7 @@
 				content: 'Ensure turnout with targeted voting plans'
 			}
 		]}
-	/>
+	/></div>
 
 	<CallToAction />
 </div>

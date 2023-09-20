@@ -296,7 +296,6 @@
 
         
         <div class="pt-10">
-            <button class="btn btn-primary mb-4" on:click={refreshEvaluations}>Refresh Evaluations</button>
             <table class="min-w-full bg-base-100 text-base table table-zebra">
                 <thead>
                     <tr>
@@ -335,6 +334,7 @@
                     {/each}
                 </tbody>
             </table>
+            <button class="btn btn-primary my-5" on:click={refreshEvaluations}>Refresh Evaluations</button>
         </div>
 
 
