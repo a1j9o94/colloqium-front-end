@@ -5,6 +5,8 @@
 	import { onDestroy, onMount } from 'svelte';
     import 'c3/c3.css';
     import io from 'socket.io-client';
+    import Card from '$lib/components/landing/components/Card.svelte';
+	import Cards from '$lib/components/landing/Cards.svelte';
     
     export let data;
     let { campaign } = data;
@@ -103,6 +105,9 @@
                 columns: [
                     ['Campaign', campaign.interactions_sent, campaign.interactions_delivered, campaign.interactions_responded, campaign.interactions_converted]
                 ],
+                colors: {
+                    Campaign: '#FFFFFF'
+                },
                 type: 'bar'
             },
             bar: {
@@ -249,36 +254,43 @@
         <!-- Three buttons for "Refresh Evaluations", "Refresh Funnel", "Refresh Insights"-->
         
         <div class="w-full">
-        <h1>Funnel</h1>
+        <h1>Goal</h1>
         {#if funnelLoading}
             <span class="loading loading-spinner loading-lg h-max"></span>
         {:else}
-            <div id="funnelChart" class="w-2/3 mx-auto"></div>
+            <div class="">
+                <div class="text-5xl">{campaign.campaign_goal}</div>
+            </div>
+            <div class="flex justify-between h-max pt-5">
+                <div class="w-1/3 flex flex-col justify-center items-center">
+                    <div class="flex flex-col justify-between h-full">
+                        <div class="h-1/2">
+                            <h2 class="text-8xl">{campaign.interactions_sent}</h2>
+                            <p>Messages Sent</p>
+                        </div>
+                        <div class=" h-1/2">
+                            <h2 class="text-8xl">{campaign.interactions_converted}</h2>
+                            <p>Converted</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="funnelChart" class="w-2/3 h-full"></div>
+            </div>
         {/if}
-        
         <btn class="btn btn-primary" on:click={refreshFunnel}>Refresh Funnel</btn>
         </div>
 
         <div class="pt-10">
-            <h1 class="text-lg font-bold mb-2">Campaign Summaries</h1>
             {#if insightsLoading}
                 <span class="loading loading-spinner loading-lg h-max"></span>
             {:else}
-                {#each summaries as summary}
-                    <div class="mb-4">
-                        <h2 class="text-md font-semibold">{summary.title}</h2>
-                        <p class="text-sm">{summary.content}</p>
-                    </div>
-                {/each}
+
+            <Cards title="Campaign Summaries" cards={summaries.map(summary => ({ title: summary.title, content: summary.content }))}/>    
             
                 <!-- Check if campaign.policy_insights is a string. If so, do not show it -->
                 {#if campaign.policy_insights && typeof campaign.policy_insights === 'object' && !(campaign.policy_insights instanceof String)}
-                    <div class="mt-6">
-                        <h2 class="text-lg font-bold mb-2">Policy Insights</h2>
-                        {#each Object.entries(campaign.policy_insights) as [policy_area, insight]}
-                        <p class="text-md"><span class="font-semibold">{policy_area}:</span> {insight}</p>
-                        {/each}
-                    </div>
+                    
+                <div class="pt-5"><Cards title="Policy Insights" cards={Object.entries(campaign.policy_insights).map(([policy_area, insight]) => ({ title: policy_area, content: insight }))}/></div>
                 {/if}
             {/if}
             <button class="btn btn-primary mt-4" on:click={refreshInsights}>Refresh Insights</button>
@@ -318,9 +330,9 @@
                                     </div>
                                 </td>
                                 <td class="px-4 py-2"><div class="h-28 overflow-y-auto">{interaction.insights_about_voter}</div></td>
-                                <td class="px-4 py-2 btn btn-secondary m-2"><a href="/interaction/{interaction.id}">View Conversation</a></td> 
+                                <td class="px-4 py-2 btn btn-primary m-2"><a href="/interaction/{interaction.id}">View Conversation</a></td> 
                                 <!-- Add a data attribute to store the interaction ID -->
-                                <td class=" btn btn-secondary mt-2 mx-2" data-interaction-id={interaction.id} on:click={singleRefreshRequest}>Refresh Evaluation</td>
+                                <td class=" btn btn-primary mt-2 mx-2" data-interaction-id={interaction.id} on:click={singleRefreshRequest}>Refresh Evaluation</td>
                             {/if}
                         </tr>
                     {/each}

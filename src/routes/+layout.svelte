@@ -11,15 +11,17 @@
 	class="leading-normal tracking-normal text-white gradient flex flex-col items-stretch"
 	style="font-family: 'Source Sans Pro', sans-serif;"
 >
-	<div><Nav /></div>
+	<div class="flex flex-col">
+		<div><Nav /></div>
 	
-  <div class="pt-20"><slot/></div>
+  		<div class="pt-20"><slot/></div>
 
-	<div><Footer /></div>
+		<div><Footer /></div>
+	</div>
 </div>
 
 <style>
 	.gradient {
-		@apply bg-gradient-to-r from-pink to-yellow;
+		@apply bg-gradient-to-r from-teal-700 to-teal-200;
 	}
 </style>

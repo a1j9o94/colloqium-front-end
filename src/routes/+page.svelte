@@ -6,10 +6,28 @@
 	import CallToAction from '$lib/components/landing/CallToAction.svelte';
 </script>
 
+<div class="gradient p-0">
 	<Hero />
 
 	<Features />
 
-	<Cards />
+	<Cards title="We can help you ..."
+	
+		cards={[
+			{
+				title: 'Drive Fundraising',
+				content: 'Increase fundraising by focusing on what matters with each voter'
+			},
+			{
+				title: 'Recruit Volunteers',
+				content: 'Recruit more volunteers with personalized messaging'
+			},
+			{
+				title: 'Build Voting Plans',
+				content: 'Ensure turnout with targeted voting plans'
+			}
+		]}
+	/>
 
 	<CallToAction />
+</div>

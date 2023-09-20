@@ -11,7 +11,7 @@
 			<div class="flex-1 mb-6 text-black">
 				<!-- svelte-ignore a11y-invalid-attribute -->
 				<a
-					class="text-pink-600 no-underline hover:no-underline font-bold text-2xl lg:text-4xl"
+					class="text-black no-underline hover:no-underline font-bold text-2xl lg:text-4xl"
 					href="/"
 				>
 				<LogoSVG />
