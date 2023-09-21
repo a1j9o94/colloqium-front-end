@@ -2,6 +2,7 @@
 export default {
   mode: 'jit',
   content: ['./src/**/*.{html,js,svelte,ts}'],
+  darkMode: 'class',
   theme: {
     gradientColorStops: theme => ({
       ...theme('colors'),

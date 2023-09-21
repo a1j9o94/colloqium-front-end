@@ -6,18 +6,6 @@
     export let campaign: Campaign;
     let end_date: Date = new Date(campaign.campaign_end_date);
 
-    onMount(() => {
-        //loop through all the elements and remove all of the tailwind classes with "dark" prefix
-        const elements = document.querySelectorAll('[class*="dark:"]');
-        elements.forEach((el) => {
-            const classList = el.classList;
-            const darkClassList = Array.from(classList).filter((className) => className.startsWith("dark:"));
-            darkClassList.forEach((className) => {
-                classList.remove(className);
-            });
-        });
-    });
-
 </script>
 
 
