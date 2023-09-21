@@ -10,7 +10,7 @@
           Write better messages
         </h3>
         <p class="text-gray-600 mb-8">
-          Use AI to write better messages that stick to your messaging and strategy.
+          Use AI to write better messages that stick to your messaging and strategy
           <br />
           <br />
         </p>
@@ -45,7 +45,7 @@
           Understand your voters
         </h3>
         <p class="text-gray-600 mb-8">
-          Build detailed voter profiles so you we can improve your targeting and ourtreach over time
+          Build detailed voter profiles so you can improve your targeting and ourtreach over time
           <br />
           <br />
         </p>
