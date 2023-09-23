@@ -20,6 +20,8 @@ export const load = (async ({fetch, params}) => {
         
             // Extracting the JSON from the response
             const jsonResponse = await response.json();
+
+            console.log(jsonResponse);
         
             // Assuming 'senders' is the key in the returned JSON that contains the list of senders
             return jsonResponse.campaign as Promise<Campaign>;
