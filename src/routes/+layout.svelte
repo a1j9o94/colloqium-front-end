@@ -2,7 +2,7 @@
 	import Nav from '$lib/components/landing/Nav.svelte';
 	import Footer from '$lib/components/landing/Footer.svelte';
   //load post.css from top level src
-  import '../app.postcss';
+  import '../CSS/app.postcss';
 
 
 </script>

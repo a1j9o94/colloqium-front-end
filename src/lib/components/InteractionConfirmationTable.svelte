@@ -5,6 +5,7 @@
     import { API_URL } from '$lib/utility';
     import { writable, type Writable } from 'svelte/store';
     import { Socket, io } from 'socket.io-client';
+	import InteractionToConfirm from './InteractionToConfirm.svelte';
 
     export let campaign_id: string = "";
 
@@ -65,12 +66,10 @@
         interactions.set(interactionsData);
         console.log("Interactions on mount :");
         console.log($interactions);
-    });
 
-    onDestroy(() => {
-        if (socket){
+        return () => {
             socket.disconnect();
-        }
+        };
     });
 
     async function sendAllInteractions() {
@@ -117,32 +116,34 @@
 
 
 <!-- Button to confirm all messages. -->
-<div class="btn btn-primary" on:click={sendAllInteractions}>Send All</div>
-<div class="container">
-    <h1 class="my-4">Interactions</h1>
-        <table class="table table-striped">
-            <thead class="thead-light">
+<button class="btn dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 text-slate-600 dark:text-slate-300" on:click={sendAllInteractions}>
+    <svg class="w-4 h-4 fill-current text-slate-500 dark:text-slate-400 shrink-0" viewBox="0 0 16 16">
+        <path d="M18.3 11.3l-1.4 1.4 4.3 4.3H11v2h10.2l-4.3 4.3 1.4 1.4L25 18z"></path>
+    </svg>
+    
+    
+    <span class="ml-2">Send All</span></button>
+
+<div class="bg-white dark:bg-slate-800 shadow-lg rounded-sm border border-slate-200 dark:border-slate-700">
+    <header class="px-5 py-4">
+        <h2 class="font-semibold text-slate-800 dark:text-slate-100">Interactions to Confirm</h2>
+    </header>
+    <div class="overflow-x-auto">
+        <table class="table-auto w-full dark:text-slate-300 text-slate-800">
+            <thead class="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/20 border-t border-b border-slate-200 dark:border-slate-700">
                 <tr>
-                    <th scope="col">Voter</th>
-                    <th scope="col">Interaction Message</th>
-                    <th scope="col">Action</th>
+                    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap font-semibold text-left" >Voter</th>
+                    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px font-semibold text-left" scope="col">Interaction Message</th>
+                    <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap w-px font-semibold text-left" scope="col">Action</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody class="text-sm divide-y divide-slate-200 dark:divide-slate-700">
                 {#each $interactions as interaction, interactionIndex (interaction.id)}
                     {#if interaction}
-                        <tr>
-                            <td>{interaction.voter.voter_name}</td>
-                            <!-- Get the last item in the conversation array -->
-                            <td>{interaction.conversation[interaction.conversation.length - 1].content}</td>
-                            <td>
-                                <button type="button" class="btn btn-primary" on:click={() => sendInteraction(interactionIndex)} disabled={interaction.sent || interaction.error}>
-                                    {interaction.sent ? 'Sent' : interaction.error ? 'Error' : 'Send'}
-                                </button>
-                            </td>
-                        </tr>
+                        <InteractionToConfirm {interaction} {interactionIndex} {sendInteraction} /> 
                     {/if}
                 {/each}
             </tbody>
         </table>
+    </div>
 </div>
