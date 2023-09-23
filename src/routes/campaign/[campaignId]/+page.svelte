@@ -49,6 +49,8 @@
         socket.on('message', async (data) => {
             console.log(data);
         })
+
+        console.log("Campaign:", campaign);
     });
 
     onDestroy(() => {
