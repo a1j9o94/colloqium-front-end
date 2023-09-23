@@ -78,15 +78,17 @@
                 <p>{audience.audience_information}</p>
                 
                 {#each audience.voters as voter, rindex}
-                    <div class="collapse bg-base-300 mt-2">
-                        <input type="checkbox" id={"voter" + index + "-" + rindex} />
-                        <label for={"voter" + index + "-" + rindex} class="collapse-title text-lg font-medium">
-                            {voter.voter_name}
-                        </label>
-                        <div class="collapse-content">
-                            <p>{voter.voter_profile.interests}</p>
+                    {#if voter}
+                        <div class="collapse bg-base-300 mt-2">
+                            <input type="checkbox" id={"voter" + index + "-" + rindex} />
+                            <label for={"voter" + index + "-" + rindex} class="collapse-title text-lg font-medium">
+                                {voter.voter_name}
+                            </label>
+                            <div class="collapse-content">
+                                <p>{voter.voter_profile.interests}</p>
+                            </div>
                         </div>
-                    </div>
+                    {/if}
                 {/each}
             </div>
         </div>  
