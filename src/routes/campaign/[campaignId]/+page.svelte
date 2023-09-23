@@ -50,7 +50,7 @@
             console.log(data);
         })
 
-        console.log("Campaign:", campaign);
+        console.log("Campaign on mount:", campaign);
     });
 
     onDestroy(() => {
