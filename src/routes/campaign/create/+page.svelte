@@ -164,7 +164,7 @@
     });
   </script>
   
-  <div class="flex flex-col justify-center items-center h-screen">
+  <div class="flex flex-col justify-center items-center">
     <form class="w-full max-w-lg" on:submit|preventDefault={handleSubmit}>
         <div class="flex flex-wrap -mx-3 mb-6"> 
 

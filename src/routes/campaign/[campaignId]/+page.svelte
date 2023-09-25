@@ -84,9 +84,11 @@
                             <label for={"voter" + index + "-" + rindex} class="collapse-title text-lg font-medium">
                                 {voter.voter_name}
                             </label>
-                            <div class="collapse-content">
-                                <p>{voter.voter_profile.interests}</p>
-                            </div>
+                            {#if voter.voter_profile}
+                                <div class="collapse-content">
+                                    <p>{voter.voter_profile.interests}</p>
+                                </div>
+                            {/if}
                         </div>
                     {/if}
                 {/each}
