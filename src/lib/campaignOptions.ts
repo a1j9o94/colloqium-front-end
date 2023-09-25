@@ -125,7 +125,7 @@ class Persuasion extends CampaignOption {
     
         getCampaignName(): string {
             //add a time stamp to the date to make it unique
-            return `Volunteer Recruitment: ${this.fieldValueMap["Campaign Name"]}`
+            return `Persuasion: ${this.fieldValueMap["Campaign Name"]}`
         }
     
         getCampaignEndDate(): Date {
