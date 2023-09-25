@@ -129,7 +129,7 @@ class Persuasion extends CampaignOption {
         }
     
         getCampaignEndDate(): Date {
-            return new Date(this.fieldValueMap["Next Event Date"])
+            return new Date(this.fieldValueMap["Campaign End Date"])
         }
     }
 
