@@ -4,6 +4,8 @@
     import { onMount } from 'svelte';
     import CampaignCard from '$lib/components/campaign/CampaignCard.svelte';
 	import { goto } from '$app/navigation';
+    import { campaignStore } from "$lib/stores/campaignStore.js";
+    import { type Campaign } from "$lib/model";
     
     export let data: PageData;
     $: ( { campaigns } = data );
@@ -11,6 +13,12 @@
     onMount(() => {
         console.log(campaigns);
     });
+
+    function create_campaign(): void {
+        //empty the campaign store
+        campaignStore.set({} as Campaign);
+        goto("/campaign/create");
+    }
 
 </script>
 
@@ -33,7 +41,7 @@
                 <!-- Right: Actions -->
                 <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
                     <!-- Create campaign button -->
-                    <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white" on:click={() => goto("/campaign/create")}>
+                    <button class="btn bg-indigo-500 hover:bg-indigo-600 text-white" on:click={create_campaign}>
                         <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">
                             <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z" />
                         </svg>
