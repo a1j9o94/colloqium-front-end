@@ -1,18 +1,54 @@
 <script lang="ts">
     import AuthCheck from '$lib/components/AuthCheck.svelte';
-    import type { PageData } from './$types';
     import { onMount } from 'svelte';
     import CampaignCard from '$lib/components/campaign/CampaignCard.svelte';
 	import { goto } from '$app/navigation';
     import { campaignStore } from "$lib/stores/campaignStore.js";
-    import { type Campaign } from "$lib/model";
-    
-    export let data: PageData;
-    $: ( { campaigns } = data );
+    import type { Campaign, Sender } from "$lib/model";
+    import { userData, user } from "$lib/firebase";
+    import { API_URL } from "$lib/utility";
 
-    onMount(() => {
-        console.log(campaigns);
+    
+    let campaigns: Campaign[] = [];
+    let isLoading = true;
+    
+    onMount(async () => {
+        await user;
+        await userData;
+
+        isLoading = false;
+
+        if(!$user){
+            await goto("/login");
+            return;
+        } 
+        if(!$userData || $userData === undefined){
+            console.log("no user data");
+            await goto("/login");
+            return;
+        } 
+
+        console.log($userData);
+
+        for (const sender of $userData.associated_senders) {
+            get_campaign(sender).then((data) => {
+                campaigns = [...campaigns, ...data];
+            });
+        }
     });
+
+    async function get_campaign(sender_id: string): Promise<Campaign[]> {
+        const response = await fetch(`${API_URL}/campaign?sender_id=${sender_id}`, {
+            method: 'GET'
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const jsonResponse = await response.json();
+        return jsonResponse.campaigns;
+    }
 
     function create_campaign(): void {
         //empty the campaign store
@@ -24,6 +60,12 @@
 
 <!-- Path: src/routes/campaign/+layout.svelte -->
 
+
+{#if isLoading}
+    <div class="flex items-center justify-center h-screen">
+        <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+    </div>
+{:else}
 
 <AuthCheck>
 
@@ -62,3 +104,5 @@
         </div>
     </main>
 </AuthCheck>
+
+{/if}
