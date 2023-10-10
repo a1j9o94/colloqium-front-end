@@ -16,8 +16,6 @@
         await user;
         await userData;
 
-        isLoading = false;
-
         if(!$user){
             await goto("/login");
             return;
@@ -35,6 +33,8 @@
                 campaigns = [...campaigns, ...data];
             });
         }
+
+        isLoading = false;
     });
 
     async function get_campaign(sender_id: string): Promise<Campaign[]> {
