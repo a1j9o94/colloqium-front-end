@@ -200,7 +200,11 @@
                             <!-- Bind input to fieldValues object -->
                             <textarea id={field[0]} bind:value={fieldValues[field[0]]} class="appearance-none block w-full bg-gray-200  border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"></textarea>
                         </div>
-
+                    {:else if field[1] == "time_input"}
+                        <div class="w-full px-3">
+                            <!-- Bind input to fieldValues object -->
+                            <input id={field[0]} type="time" bind:value={fieldValues[field[0]]} class="appearance-none block w-full bg-gray-200  border rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white">
+                        </div> 
                     {:else }
                         <div class="w-full px-3">
                             <!-- Bind input to fieldValues object -->
