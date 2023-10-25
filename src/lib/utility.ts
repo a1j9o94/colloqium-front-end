@@ -15,6 +15,9 @@ export function formatDate(date: Date): string {
 }
 
 export function formatPhoneNumber(phoneNumber: string): string {
+  
+  if(!phoneNumber) return phoneNumber;
+  
   // Remove all non-digit characters
   const digits = phoneNumber.replace(/\D/g, '');
 
