@@ -54,6 +54,7 @@
             for (let f of files) {
                 papa.parse(f, {
                     header: true,
+                    skipEmptyLines: true,
                     complete: function (results) {
                     
                         let raw_voters = results.data as Record<string, any>[];
