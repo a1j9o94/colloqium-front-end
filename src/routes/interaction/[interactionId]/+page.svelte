@@ -21,7 +21,7 @@
 <h1>Conversation</h1>
 <div class="conversation-container">
     {#each conversation as message}
-        {#if message.content}
+        {#if message.content && message.role != "function"}
             <div class="bubble {message.role}"><p class="text-black">{message.content}</p></div>
         {/if}
     {/each}

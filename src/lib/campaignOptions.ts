@@ -40,6 +40,7 @@ class EventRegistration extends CampaignOption {
             this.label =  "Event Registration"
             this.campaign_goal = "Get the voter to agree to register for the event"
             this.fields = [
+                ["Agent Name", "text_input"],
                 ["Event Title", "text_input"],
                 ["Event Date", "date_input"],
                 ["Event Time", "time_input"],
@@ -52,7 +53,7 @@ class EventRegistration extends CampaignOption {
     getCampaignPrompt(): string {
         
         const prompt = `
-            Your name is Sarah. You are a volunteer for ${this.sender.sender_name}. You are reaching out to people who have shown interests in supporting ${this.sender.sender_name} about an upcoming event for the candidate. Your job is to get them to agree to come to the event and fill out the registration link. If they do agree, send them this link to register: ${this.fieldValueMap["Registration Link"]} Do not send the link unless they agree to attend.
+            Your name is ${this.fieldValueMap["Agent Name"]}. You are a volunteer for ${this.sender.sender_name}. You are reaching out to people who have shown interests in supporting ${this.sender.sender_name} about an upcoming event for the candidate. Your job is to get them to agree to come to the event and fill out the registration link. If they do agree, send them this link to register: ${this.fieldValueMap["Registration Link"]} Do not send the link unless they agree to attend.
             The event is ${this.fieldValueMap["Event Title"]} on ${this.fieldValueMap["Event Date"]} ${this.fieldValueMap["Event Time"]} at ${this.fieldValueMap["Event Location"]}.  Event Description:  ${this.fieldValueMap["Event Description"]}
         `
         return prompt
