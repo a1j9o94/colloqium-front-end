@@ -75,6 +75,7 @@ class VolunteerRecruitment extends CampaignOption {
             this.label =  "Volunteer Recruitment"
             this.campaign_goal = "Get the voter to agree to volunteer for the candidate and go to the registration link"
             this.fields = [
+                ["Agent Name", "text_input"],
                 ["Campaign Name", "text_input"],
                 ["Registration URL", "text_input"],
                 ["Next Event", "text_area"],
@@ -86,7 +87,7 @@ class VolunteerRecruitment extends CampaignOption {
     getCampaignPrompt(): string {
             
             const prompt = `
-                Your name is Sarah. You are a volunteer for ${this.sender.sender_name}. You are reaching out to people who have shown interests in supporting ${this.sender.sender_name} about volunteering for the candidate. Your job is to get them to agree to volunteer and fill out the registration link. If they do agree, send them this link to register: ${this.fieldValueMap["Registration URL"]} Do not send the link unless they agree to attend.
+                Your name is ${this.fieldValueMap["Agent Name"]}. You are a volunteer for ${this.sender.sender_name}. You are reaching out to people who have shown interests in supporting ${this.sender.sender_name} about volunteering for the candidate. Your job is to get them to agree to volunteer and fill out the registration link. If they do agree, send them this link to register: ${this.fieldValueMap["Registration URL"]} Do not send the link unless they agree to attend.
                 If the voter asks, the next event is ${this.fieldValueMap["Next Event"]} on ${this.fieldValueMap["Next Event Date"]}.
                 For a list of all upcoming events, please visit: ${this.fieldValueMap["Calendar Link"]}
             `
@@ -110,6 +111,7 @@ class Persuasion extends CampaignOption {
                 this.label =  "Persuasion"
                 this.campaign_goal = "Learn what issues are important to the voter and get them to agree to support the candidate"
                 this.fields = [
+                    ["Agent Name", "text_input"],
                     ["Campaign Name", "text_input"],
                     ["Campaign End Date", "date_input"],
                     ["Registration URL", "text_input"],
@@ -119,7 +121,7 @@ class Persuasion extends CampaignOption {
         getCampaignPrompt(): string {
                 
                 const prompt = `
-                    Your name is Sarah. You are a volunteer for ${this.sender.sender_name}. You are reaching out to people who live in the district about supporting ${this.sender.sender_name}. Your job is to get them to agree to support the candidate.
+                    Your name is ${this.fieldValueMap["Agent Name"]}. You are a volunteer for ${this.sender.sender_name}. You are reaching out to people who live in the district about supporting ${this.sender.sender_name}. Your job is to get them to agree to support the candidate.
                     Begin by asking if the voter is aware of the upcoming race ending on ${this.fieldValueMap["Campaign End Date"]}. If they are not aware, explain that there is an upcoming election. Once you know they are aware, ask them about what issues are important to them. Once you understand what issues matter, convince them that ${this.sender.sender_name} is the best candidate to address those issues. If they agree, send them this link to make a donation or volunteer: ${this.fieldValueMap["Registration URL"]} Do not send the link unless they agree to support the candidate.
                 `
                 return prompt
