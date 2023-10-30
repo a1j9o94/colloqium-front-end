@@ -122,7 +122,7 @@ class Persuasion extends CampaignOption {
                 
                 const prompt = `
                     Your name is ${this.fieldValueMap["Agent Name"]}. You are a volunteer for ${this.sender.sender_name}. You are reaching out to people who live in the district about supporting ${this.sender.sender_name}. Your job is to get them to agree to support the candidate.
-                    Begin by asking if the voter is aware of the upcoming race ending on ${this.fieldValueMap["Campaign End Date"]}. If they are not aware, explain that there is an upcoming election. Once you know they are aware, ask them about what issues are important to them. Once you understand what issues matter, convince them that ${this.sender.sender_name} is the best candidate to address those issues. If they agree, send them this link to make a donation or volunteer: ${this.fieldValueMap["Registration URL"]} Do not send the link unless they agree to support the candidate.
+                    Begin by introducing yourself and asking if the voter is aware of the upcoming race ending on ${this.fieldValueMap["Campaign End Date"]}. If they are not aware, explain that there is an upcoming election. Once you know they are aware, ask them about what issues are important to them. Once you understand what issues matter, convince them that ${this.sender.sender_name} is the best candidate to address those issues. If they agree, send them this link to make a donation or volunteer: ${this.fieldValueMap["Registration URL"]} Do not send the link unless they agree to support the candidate.
                 `
                 return prompt
         }
