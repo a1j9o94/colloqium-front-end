@@ -80,6 +80,7 @@ class VolunteerRecruitment extends CampaignOption {
                 ["Registration URL", "text_input"],
                 ["Next Event", "text_area"],
                 ["Next Event Date", "date_input"],
+                ["Next Event Time", "time_input"],
                 ["Calendar Link", "text_input"]
             ]
     }
@@ -106,36 +107,68 @@ class VolunteerRecruitment extends CampaignOption {
 
 class Persuasion extends CampaignOption {
         
-        constructor() {
-                super()
-                this.label =  "Persuasion"
-                this.campaign_goal = "Learn what issues are important to the voter and get them to agree to support the candidate"
-                this.fields = [
-                    ["Agent Name", "text_input"],
-                    ["Campaign Name", "text_input"],
-                    ["Campaign End Date", "date_input"],
-                    ["Registration URL", "text_input"],
-                ]
-        }
-    
-        getCampaignPrompt(): string {
-                
-                const prompt = `
-                    Your name is ${this.fieldValueMap["Agent Name"]}. You are a volunteer for ${this.sender.sender_name}. You are reaching out to people who live in the district about supporting ${this.sender.sender_name}. Your job is to get them to agree to support the candidate.
-                    Begin by introducing yourself and asking if the voter is aware of the upcoming race ending on ${this.fieldValueMap["Campaign End Date"]}. If they are not aware, explain that there is an upcoming election. Once you know they are aware, ask them about what issues are important to them. Once you understand what issues matter, convince them that ${this.sender.sender_name} is the best candidate to address those issues. If they agree, send them this link to make a donation or volunteer: ${this.fieldValueMap["Registration URL"]} Do not send the link unless they agree to support the candidate.
-                `
-                return prompt
-        }
-    
-        getCampaignName(): string {
-            //add a time stamp to the date to make it unique
-            return `Persuasion: ${this.fieldValueMap["Campaign Name"]}`
-        }
-    
-        getCampaignEndDate(): Date {
-            return new Date(this.fieldValueMap["Campaign End Date"])
-        }
+    constructor() {
+            super()
+            this.label =  "Persuasion"
+            this.campaign_goal = "Learn what issues are important to the voter and get them to agree to support the candidate"
+            this.fields = [
+                ["Agent Name", "text_input"],
+                ["Campaign Name", "text_input"],
+                ["Campaign End Date", "date_input"],
+                ["Registration URL", "text_input"],
+            ]
     }
+
+    getCampaignPrompt(): string {
+            
+            const prompt = `
+                Your name is ${this.fieldValueMap["Agent Name"]}. You are a volunteer for ${this.sender.sender_name}. You are reaching out to people who live in the district about supporting ${this.sender.sender_name}. Your job is to get them to agree to support the candidate.
+                Begin by introducing yourself and asking if the voter is aware of the upcoming race ending on ${this.fieldValueMap["Campaign End Date"]}. If they are not aware, explain that there is an upcoming election. Once you know they are aware, ask them about what issues are important to them. Once you understand what issues matter, convince them that ${this.sender.sender_name} is the best candidate to address those issues. If they agree, send them this link to make a donation or volunteer: ${this.fieldValueMap["Registration URL"]} Do not send the link unless they agree to support the candidate.
+            `
+            return prompt
+    }
+
+    getCampaignName(): string {
+        //add a time stamp to the date to make it unique
+        return `Persuasion: ${this.fieldValueMap["Campaign Name"]}`
+    }
+
+    getCampaignEndDate(): Date {
+        return new Date(this.fieldValueMap["Campaign End Date"])
+    }
+}
+
+class EarlyVoting extends CampaignOption {
+    
+    constructor() {
+        super()
+        this.label =  "Early Voting"
+        this.campaign_goal = "Get the voter to agree to vote early"
+        this.fields = [
+            ["Agent Name", "text_input"],
+            ["Campaign Name", "text_input"],
+            ["Early Voting Deadline", "date_input"],
+            ["Campaign End Date", "date_input"],
+        ]
+    }
+
+    getCampaignPrompt(): string {
+                
+        const prompt = `
+            Your name is ${this.fieldValueMap["Agent Name"]}. You are a volunteer for ${this.sender.sender_name}. You are reaching out to people who live in the district about voting early for ${this.sender.sender_name}. Your job is to get them to agree to vote early.
+            Begin by introducing yourself and asking if the voter is aware of the upcoming race ending on ${this.fieldValueMap["Campaign End Date"]}. If they are not aware, explain that there is an upcoming election. Once you know they are aware, ask them if they are aware of early voting. If they are not aware, explain that they can vote early. Once you know they are aware, ask them if they are planning to vote early. If they are not planning to vote early, convince them that voting early is the best option.
+        `
+        return prompt
+    }
+
+    getCampaignName(): string {
+        return `Early Voting: ${this.fieldValueMap["Campaign Name"]}`
+    }
+
+    getCampaignEndDate(): Date {
+        return new Date(this.fieldValueMap["Early Voting Deadline"])
+    }
+}
 
 
 
@@ -144,6 +177,7 @@ export function getCampaignOptions(): CampaignOption[] {
     return [
         new EventRegistration(),
         new VolunteerRecruitment(),
-        new Persuasion()
+        new Persuasion(),
+        new EarlyVoting()
     ]
 }
