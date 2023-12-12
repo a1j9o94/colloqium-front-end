@@ -59,9 +59,15 @@ export interface Audience {
     campaigns: Campaign[];
 }
 
+export enum CampaignTypes {
+    text_message = "text_message",
+    robo_call = "robo_call"
+}
+
 export interface Campaign {
     id: string;
     campaign_name: string;
+    campaign_type: CampaignTypes;
     campaign_prompt: string;
     campaign_goal: string;
     sender: Sender;

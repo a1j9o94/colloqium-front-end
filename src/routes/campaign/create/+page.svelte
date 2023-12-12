@@ -1,7 +1,8 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { goto } from '$app/navigation';
-    import type { Campaign, Sender } from "$lib/model";
+    import type { Campaign, Sender} from "$lib/model";
+    import { CampaignTypes } from "$lib/model";
     import { campaignStore } from "$lib/stores/campaignStore.js";
     import { userData } from "$lib/firebase";
     import { API_URL } from "$lib/utility";
@@ -11,6 +12,7 @@
     let campaign_prompt = "";
     let campaign_goal = "";
     let campaign_fallback = "";
+    let campaign_type: CampaignTypes = CampaignTypes.text_message;
     let localSender: Sender | null = null;
     let campaign_end_date: Date = new Date();
     let localCampaign: Campaign | null;
@@ -84,6 +86,9 @@
             return;
         }
 
+
+        localCampaign.campaign_type = campaign_type;
+
         campaign_option.prepareCampaign(localSender, fieldValues);
         
         localCampaign.campaign_name = campaign_option.getCampaignName();
@@ -97,6 +102,7 @@
             campaign_prompt: localCampaign.campaign_prompt,
             campaign_goal: localCampaign.campaign_goal,
             campaign_end_date: localCampaign.campaign_end_date,
+            campaign_type: localCampaign.campaign_type
         };
 
         if (!existingCampaign) {
@@ -152,6 +158,7 @@
             campaign_prompt = localCampaign.campaign_prompt;
             campaign_goal = localCampaign.campaign_goal;
             localSender = localCampaign.sender;
+            campaign_type = localCampaign.campaign_type;
             campaign_end_date = new Date(localCampaign.campaign_end_date);
             existingCampaign = true;
 
@@ -168,6 +175,15 @@
     <form class="w-full max-w-lg" on:submit|preventDefault={handleSubmit}>
         <div class="flex flex-wrap -mx-3 mb-6"> 
 
+             <div class="w-full px-3">
+                 <label class="block uppercase tracking-wide text-xs font-bold mb-2" for="campaign_type">Campaign Type:</label>
+                 <select id="campaign_type" class="block appearance-none w-full py-3 px-4 pr-8 bg-gray-200 rounded leading-tight focus:outline-none focus:bg-white" bind:value={campaign_type} required>
+                     {#each Object.values(CampaignTypes) as type }
+                         <option value={type}>{type}</option>
+                     {/each}
+                 </select>
+             </div>
+            
             {#if campaign_option}
 
                 <div class="w-full px-3">

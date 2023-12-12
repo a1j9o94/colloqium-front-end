@@ -19,7 +19,7 @@
 <tr class="">
     <td class="px-2 first:pl-5 last:pr-5 py-3 w-px">{interaction.voter.voter_name}</td>
     <!-- Get the last item in the conversation array -->
-    <td class="px-2 first:pl-5 last:pr-5 py-3 w-px">{interaction.conversation[interaction.conversation.length - 1].content}</td>
+    <td class="px-2 first:pl-5 last:pr-5 py-3 w-px">{interaction.conversation[interaction.conversation.length - 1].content.slice(0, 300)}</td>
     <td>
         <button type="button" class="btn bg-indigo-500 hover:bg-indigo-600 text-white" on:click={() => handleSend(interactionIndex)} disabled={interaction.sent || interaction.error}>
             {#if loading}

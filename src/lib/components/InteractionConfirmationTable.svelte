@@ -82,7 +82,7 @@
     async function sendInteraction(interactionIndex: number) {
         const interaction = $interactions[interactionIndex];
         let interactionId = interaction.id;
-        let interactionMethod = "send_text";
+        let interactionMethod = interaction.interaction_type == "text_message" ? "send_text" : "make_robo_call";
         let url = `${API_URL}/${interactionMethod}`;
 
         try {

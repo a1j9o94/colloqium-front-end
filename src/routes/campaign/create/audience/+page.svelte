@@ -198,22 +198,30 @@
             }
         }
 
+        let interaction_body = JSON.stringify({
+            campaign_id: localCampaign?.id,
+            interaction_type: localCampaign?.campaign_type,
+        });
+
+        console.log("Local Campaign:");
+        console.log(localCampaign);
+
+        console.log("Interaction body:");
+        console.log(interaction_body);
 
         // At this point, audience has been updated
         //call the interaction route with a post including the campaign id and interaction type to generate the messages
         let interactionResponse = await fetch(`${API_URL}/interaction`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            campaign_id: localCampaign?.id,
-            interaction_type: "text_message",
-        })
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: interaction_body
         });
 
         if (interactionResponse && !interactionResponse.ok) {
             console.error(`Error creating interaction for ${localCampaign?.campaign_name}`);
+            console.error(interactionResponse);
             isLoading = false;
             return;
         }
