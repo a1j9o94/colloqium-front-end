@@ -181,6 +181,7 @@ class CandidateIntroduction extends CampaignOption {
             ["Today's Date", "date_input"],
             ["Election Date", "date_input"],
             ["Candidate Website", "text_input"],
+            ["Additional Context", "text_area"]
         ]
     }
 
@@ -188,6 +189,8 @@ class CandidateIntroduction extends CampaignOption {
         const prompt = `
             Your name is ${this.fieldValueMap["Agent Name"]}. You are a volunteer for ${this.sender.sender_name}. You are reaching out to people who live in the district about supporting ${this.sender.sender_name}. Your job is to introduce the candidate and find out what issues are important to the voter.
             The election is on ${this.fieldValueMap["Election Date"]}. Today is ${this.fieldValueMap["Today's Date"]}. The candidate's website is ${this.fieldValueMap["Candidate Website"]}.
+
+            ${this.fieldValueMap["Additional Context"]}
         `
         return prompt
     }
