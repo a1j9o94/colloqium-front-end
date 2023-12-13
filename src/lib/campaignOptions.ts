@@ -170,6 +170,38 @@ class EarlyVoting extends CampaignOption {
     }
 }
 
+class CandidateIntroduction extends CampaignOption {
+    constructor() {
+        super()
+        this.label =  "Candidate Introduction"
+        this.campaign_goal = "Introduce the candidate to the voter. Find out what issues are important to the voter"
+        this.fields = [
+            ["Agent Name", "text_input"],
+            ["Campaign Name", "text_input"],
+            ["Today's Date", "date_input"],
+            ["Election Date", "date_input"],
+            ["Candidate Website", "text_input"],
+        ]
+    }
+
+    getCampaignPrompt(): string {
+        const prompt = `
+            Your name is ${this.fieldValueMap["Agent Name"]}. You are a volunteer for ${this.sender.sender_name}. You are reaching out to people who live in the district about supporting ${this.sender.sender_name}. Your job is to introduce the candidate and find out what issues are important to the voter.
+            The election is on ${this.fieldValueMap["Election Date"]}. Today is ${this.fieldValueMap["Today's Date"]}. The candidate's website is ${this.fieldValueMap["Candidate Website"]}.
+        `
+        return prompt
+    }
+
+    getCampaignName(): string {
+        return `Candidate Introduction: ${this.fieldValueMap["Campaign Name"]}`
+    }
+
+    getCampaignEndDate(): Date {
+        return new Date(this.fieldValueMap["Election Date"])
+    }
+
+}
+
 
 
 export function getCampaignOptions(): CampaignOption[] {
@@ -178,6 +210,7 @@ export function getCampaignOptions(): CampaignOption[] {
         new EventRegistration(),
         new VolunteerRecruitment(),
         new Persuasion(),
-        new EarlyVoting()
+        new EarlyVoting(),
+        new CandidateIntroduction()
     ]
 }
