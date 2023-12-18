@@ -82,7 +82,8 @@
     async function sendInteraction(interactionIndex: number) {
         const interaction = $interactions[interactionIndex];
         let interactionId = interaction.id;
-        let interactionMethod = interaction.interaction_type == "text_message" ? "send_text" : "make_robo_call";
+        //check for text_message, robo_call, and email and send to the appropriate endpoint
+        let interactionMethod = interaction.interaction_type == "text_message" ? "send_text" : interaction.interaction_type == "robo_call" ? "make_robo_call" : "send_email"; 
         let url = `${API_URL}/${interactionMethod}`;
 
         try {

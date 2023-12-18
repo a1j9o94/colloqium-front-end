@@ -64,6 +64,7 @@
                                 id: "",
                                 voter_name: voter["Voter Name"],
                                 voter_phone_number: formatPhoneNumber(voter["Phone Number"]),
+                                voter_email: voter["Email"],
                                 voter_profile: {
                                     interests: voter["Voter Information"]
                                 }
@@ -110,15 +111,32 @@
 
             for (let voter of voters) {
                 
-                const formattedPhoneNumber = formatPhoneNumber(voter["voter_phone_number"]); 
+                const formattedPhoneNumber = formatPhoneNumber(voter["voter_phone_number"]);
 
-                let voterResponse = await fetch(`${API_URL}/voter?voter_phone_number=${formattedPhoneNumber}`);
+                let voterResponse = null;
+                
+                //check if voter_phone_number is empty
+                if (formattedPhoneNumber != "") {
+                    voterResponse = await fetch(`${API_URL}/voter?voter_phone_number=${formattedPhoneNumber}`);
+                } else if (voter["voter_email"] != "") {
+                    voterResponse = await fetch(`${API_URL}/voter?voter_email=${voter["voter_email"]}`);
+                } else {
+                    console.log("Voter has no phone number or email");
+                    continue;
+                }
+
+                
 
                 if (voterResponse) {
+
+                    console.log(voterResponse);
+
+                    let voterData = null;
                     if (!voterResponse.ok) {
                         let newvoter = {
                             "voter_name": voter["voter_name"],
                             "voter_phone_number": formattedPhoneNumber,
+                            "voter_email": voter["voter_email"],
                             "voter_profile": voter["voter_profile"]
                         };
 
@@ -134,10 +152,34 @@
                             console.error(`Error creating voter ${newvoter["voter_name"]}`);
                             continue;
                         }
+
+                        voterData = await voterResponse.json();
+                    }else{
+                        //make a put request to update the voter profile with the phone number and email from the csv
+                        voterData = await voterResponse.json();
+                        console.log(voterData);
+                        let voterId = voterData['voter']["id"];
+
+                        let voterUpdateResponse = await fetch(`${API_URL}/voter`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                voter_id: voterId,
+                                voter_phone_number: formattedPhoneNumber,
+                                voter_email: voter["voter_email"],
+                                voter_profile: voter["voter_profile"]
+                            })
+                        });
+
+                        if (voterUpdateResponse && !voterUpdateResponse.ok) {
+                            console.error(`Error updating voter ${voter["voter_name"]}`);
+                            continue;
+                        }
+
                     }
 
-                    // At this point, voter either existed or has been created
-                    const voterData = await voterResponse.json();
                     const voterId = voterData['voter']["id"];
 
                     // Add voter to audience

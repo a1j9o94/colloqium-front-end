@@ -2,6 +2,7 @@ export interface Voter {
     id: string;
     voter_name: string;
     voter_phone_number: string;
+    voter_email: string;
     voter_profile: VoterProfile;
     voter_engagement_history: string;
     interactions: Interaction[];
@@ -61,7 +62,8 @@ export interface Audience {
 
 export enum CampaignTypes {
     text_message = "text_message",
-    robo_call = "robo_call"
+    robo_call = "robo_call",
+    email = "email"
 }
 
 export interface Campaign {
