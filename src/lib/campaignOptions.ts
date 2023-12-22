@@ -205,6 +205,41 @@ class CandidateIntroduction extends CampaignOption {
 
 }
 
+class VoterRegistration extends CampaignOption {
+    constructor() {
+        super()
+        this.label =  "Voter Registration"
+        this.campaign_goal = "Get the voter to go to the registration link and register to vote"
+        this.fields = [
+            ["Campaign Name", "text_input"],
+            ["Agent Name", "text_input"],
+            ["Registration URL", "text_input"],
+            ["Next Election", "text_input"],
+            ["Next Election Date", "date_input"]
+        ]
+    }
+
+    getCampaignPrompt(): string {
+        const prompt = `
+            Your name is ${this.fieldValueMap["Agent Name"]}. You are a volunteer for ${this.sender.sender_name}. You are reaching out to people who live in the district about registering to vote. Your job is to get them to agree to register to vote.
+            Begin by introducing yourself and asking if the voter is registered to vote. If they are not registered to vote, convince them that registering to vote is the best option.
+            If they agree, send them this link to register: ${this.fieldValueMap["Registration URL"]} Do not send the link unless they agree to register.
+
+            The next election is ${this.fieldValueMap["Next Election"]} on ${this.fieldValueMap["Next Election Date"]}.
+        `
+        return prompt
+    }
+
+    getCampaignName(): string {
+        //add a time stamp to the date to make it unique
+        return `Voter Registration: ${this.fieldValueMap["Campaign Name"]}`
+    }
+
+    getCampaignEndDate(): Date {
+        return new Date(this.fieldValueMap["Next Event Date"])
+    }
+}
+
 
 
 export function getCampaignOptions(): CampaignOption[] {
@@ -214,6 +249,7 @@ export function getCampaignOptions(): CampaignOption[] {
         new VolunteerRecruitment(),
         new Persuasion(),
         new EarlyVoting(),
-        new CandidateIntroduction()
+        new CandidateIntroduction(),
+        new VoterRegistration()
     ]
 }
