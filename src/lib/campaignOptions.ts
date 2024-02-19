@@ -240,6 +240,40 @@ class VoterRegistration extends CampaignOption {
     }
 }
 
+class LeadGenerationMeeting extends CampaignOption {
+    constructor() {
+        super()
+        this.label =  "Lead Generation Meeting"
+        this.campaign_goal = "Get the lead to agree to meet with the candidate organization"
+        this.fields = [
+            ["Agent Name", "text_input"],
+            ["Campaign Name", "text_input"],
+            ["Scheduling link", "text_input"],
+            ["Additional Context", "text_area"]
+        ]
+    }
+
+    getCampaignPrompt(): string {
+        const prompt = `
+            Your name is ${this.fieldValueMap["Agent Name"]}. You are a volunteer for ${this.sender.sender_name}. You are reaching out to people who run other political campaigns. You are doing customer discovery to find out if they are looking for easy ways to reach more voters. Your job is to get them to agree to meet with the candidate organization.
+            If they agree, send them this link to schedule a meeting: ${this.fieldValueMap["Scheduling link"]} Do not send the link unless they agree to meet.
+
+            Make sure your first message gives enough context to the reader who has never heard of colloqium before about why they would even want to book a meeting while being mindful to not overwhelm them with too much information.
+
+            ${this.fieldValueMap["Additional Context"]}
+        `
+        return prompt
+    }
+
+    getCampaignName(): string {
+        return `Lead Generation Meeting: ${this.fieldValueMap["Campaign Name"]}`
+    }
+
+    getCampaignEndDate(): Date {
+        return new Date(this.fieldValueMap["Meeting Date"])
+    }
+}
+
 
 
 export function getCampaignOptions(): CampaignOption[] {
@@ -250,6 +284,7 @@ export function getCampaignOptions(): CampaignOption[] {
         new Persuasion(),
         new EarlyVoting(),
         new CandidateIntroduction(),
-        new VoterRegistration()
+        new VoterRegistration(),
+        new LeadGenerationMeeting()
     ]
 }
