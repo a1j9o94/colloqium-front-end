@@ -274,12 +274,50 @@ class LeadGenerationMeeting extends CampaignOption {
     }
 }
 
+class Fundraising extends CampaignOption {
+    constructor() {
+        super()
+        this.label =  "Fundraising"
+        this.campaign_goal = "Get the voter to agree to donate to the candidate"
+        this.fields = [
+            ["Agent Name", "text_input"],
+            ["Campaign Name", "text_input"],
+            ["Election Date", "date_input"],
+            ["Donation URL", "text_input"],
+            ["Additional Context", "text_area"]
+        ]
+    }
+
+    getCampaignPrompt(): string {
+        const prompt = `
+            Your name is ${this.fieldValueMap["Agent Name"]}. You are a volunteer for ${this.sender.sender_name}. You are reaching out to people who live in the district about donating to the candidate. Your job is to get them to agree to donate to the candidate.
+            Begin by introducing yourself and asking if the voter is aware of the upcoming election. If they are not aware, explain that there is an upcoming election.
+
+            Before asking for a donation be sure to talk about how Rylan can address issues that are important to the voter. If you don't know any issues, ask.
+
+            Once they agree to donate, send them the donation link: ${this.fieldValueMap["Donation URL"]} Do not send the link unless they agree to donate.
+
+            You have the following additona context for this donation ask: ${this.fieldValueMap["Additional Context"]}
+        `
+        return prompt
+    }
+
+    getCampaignName(): string {
+        return `Fundraising: ${this.fieldValueMap["Campaign Name"]}`
+    }
+
+    getCampaignEndDate(): Date {
+        return new Date(this.fieldValueMap["Election Date"])
+    }
+}
+
 
 
 export function getCampaignOptions(): CampaignOption[] {
 
     return [
         new EventRegistration(),
+        new Fundraising(),
         new VolunteerRecruitment(),
         new Persuasion(),
         new EarlyVoting(),
