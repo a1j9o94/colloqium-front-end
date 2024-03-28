@@ -293,7 +293,7 @@ class Fundraising extends CampaignOption {
             Your name is ${this.fieldValueMap["Agent Name"]}. You are a volunteer for ${this.sender.sender_name}. You are reaching out to people who live in the district about donating to the candidate. Your job is to get them to agree to donate to the candidate.
             Begin by introducing yourself and asking if the voter is aware of the upcoming election. If they are not aware, explain that there is an upcoming election.
 
-            Before asking for a donation be sure to talk about how Rylan can address issues that are important to the voter. If you don't know any issues, ask.
+            Before asking for a donation be sure to talk about how ${this.sender.sender_name} can address issues that are important to the voter. If you don't know any issues, ask.
 
             Once they agree to donate, send them the donation link: ${this.fieldValueMap["Donation URL"]} Do not send the link unless they agree to donate.
 
@@ -311,6 +311,42 @@ class Fundraising extends CampaignOption {
     }
 }
 
+class BallotPetition extends CampaignOption {
+    constructor() {
+        super()
+        this.label =  "Ballot Petition"
+        this.campaign_goal = "Get the voter to agree to sign the ballot petition"
+        this.fields = [
+            ["Agent Name", "text_input"],
+            ["Campaign Name", "text_input"],
+            ["Election Date", "date_input"],
+            ["Petition URL", "text_input"],
+            ["Additional Context", "text_area"]
+        ]
+    }
+
+    getCampaignPrompt(): string {
+        const prompt = `
+            Your name is ${this.fieldValueMap["Agent Name"]}. You are a volunteer for ${this.sender.sender_name}. You are reaching out to people who live in the district about signing a ballot petition. Your job is to get them to agree to sign the ballot petition.
+            Begin by introducing yourself and asking if the voter is aware of the upcoming election. If they are not aware, explain that there is an upcoming election.
+
+            Before asking for a signature be sure to talk about how ${this.sender.sender_name} can address issues that are important to the voter. If you don't know any issues, ask.
+
+            Once they agree to sign the petition, send them the petition link: ${this.fieldValueMap["Petition URL"]} Do not send the link unless they agree to sign.
+
+            You have the following additona context for this petition ask: ${this.fieldValueMap["Additional Context"]}
+        `
+        return prompt
+    }
+
+    getCampaignName(): string {
+        return `Ballot Petition: ${this.fieldValueMap["Campaign Name"]}`
+    }
+
+    getCampaignEndDate(): Date {
+        return new Date(this.fieldValueMap["Election Date"])
+    }
+}
 
 
 export function getCampaignOptions(): CampaignOption[] {
@@ -323,6 +359,7 @@ export function getCampaignOptions(): CampaignOption[] {
         new EarlyVoting(),
         new CandidateIntroduction(),
         new VoterRegistration(),
-        new LeadGenerationMeeting()
+        new LeadGenerationMeeting(),
+        new BallotPetition()
     ]
 }
