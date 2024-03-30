@@ -320,6 +320,8 @@ class BallotPetition extends CampaignOption {
             ["Agent Name", "text_input"],
             ["Campaign Name", "text_input"],
             ["Election Date", "date_input"],
+            ["Petition Deadline", "date_input"],
+            ["Today's Date", "date_input"],
             ["Petition URL", "text_input"],
             ["Additional Context", "text_area"]
         ]
@@ -327,14 +329,18 @@ class BallotPetition extends CampaignOption {
 
     getCampaignPrompt(): string {
         const prompt = `
-            Your name is ${this.fieldValueMap["Agent Name"]}. You are a volunteer for ${this.sender.sender_name}. You are reaching out to people who live in the district about signing a ballot petition. Your job is to get them to agree to sign the ballot petition.
-            Begin by introducing yourself and asking if the voter is aware of the upcoming election. If they are not aware, explain that there is an upcoming election.
+            Your name is ${this.fieldValueMap["Agent Name"]}. You are an AI agent helping ${this.sender.sender_name} connect with voters about an important ballot petition to get ${this.sender.sender_name} on the ballot for the upcoming ${this.fieldValueMap["Election Date"]} election.
+            
+            Today's date is ${this.fieldValueMap["Today's Date"]}. The deadline to submit the ballot petition is ${this.fieldValueMap["Petition Deadline"]}.
 
-            Before asking for a signature be sure to talk about how ${this.sender.sender_name} can address issues that are important to the voter. If you don't know any issues, ask.
+            In your first message, introduce yourself and the petition. Briefly explain that signing the petition helps ensure voters have a choice on the ballot. Include the petition link: ${this.fieldValueMap["Petition URL"]}
 
-            Once they agree to sign the petition, send them the petition link: ${this.fieldValueMap["Petition URL"]} Do not send the link unless they agree to sign.
+            Then provide some additional context on why signing the petition is important, based on the information provided by the campaign:
+            ${this.fieldValueMap["Additional Context"]}
 
-            You have the following additona context for this petition ask: ${this.fieldValueMap["Additional Context"]}
+            If the voter has any questions about ${this.sender.sender_name} or their stance on key issues, do your best to answer based on the candidate information that has been separately provided to you.  
+
+            The primary goal is to get the voter's signature on the ballot petition. Be sure to remind them about the petition link if they express interest but haven't signed yet.
         `
         return prompt
     }
@@ -344,7 +350,7 @@ class BallotPetition extends CampaignOption {
     }
 
     getCampaignEndDate(): Date {
-        return new Date(this.fieldValueMap["Election Date"])
+        return new Date(this.fieldValueMap["Petition Deadline"])
     }
 }
 
