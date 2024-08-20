@@ -78,7 +78,6 @@
     }
 
     async function handleSubmit() {
-
         isLoading = true;
         //check if a csv was submitted by seeing the voters array is empty
         if (voters.length != 0) {
@@ -106,111 +105,71 @@
             const audienceData = await audienceResponse.json();
             const audienceId = audienceData['audience']["id"];
 
-            //create an array that will hold all of the voter ids for the audience
-            let voterIds = [];
+            const batchSize = 100; // Adjust based on your API's capabilities
+            const voterIds = [];
 
-            for (let voter of voters) {
-                
-                const formattedPhoneNumber = formatPhoneNumber(voter["voter_phone_number"]);
-
-                let voterResponse = null;
-                
-                //check if voter_phone_number is empty
-                if (formattedPhoneNumber != "") {
-                    voterResponse = await fetch(`${API_URL}/voter?voter_phone_number=${formattedPhoneNumber}`);
-                } else if (voter["voter_email"] != "") {
-                    voterResponse = await fetch(`${API_URL}/voter?voter_email=${voter["voter_email"]}`);
-                } else {
-                    console.log("Voter has no phone number or email");
-                    continue;
-                }
-
-                
-
-                if (voterResponse) {
-
-                    console.log(voterResponse);
-
-                    let voterData = null;
-                    if (!voterResponse.ok) {
-                        let newvoter = {
-                            "voter_name": voter["voter_name"],
-                            "voter_phone_number": formattedPhoneNumber,
-                            "voter_email": voter["voter_email"],
-                            "voter_profile": voter["voter_profile"]
-                        };
-
-                        voterResponse = await fetch(`${API_URL}/voter`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(newvoter)
-                        });
-
-                        if (voterResponse && !voterResponse.ok) {
-                            console.error(`Error creating voter ${newvoter["voter_name"]}`);
-                            continue;
-                        }
-
-                        voterData = await voterResponse.json();
-                    }else{
-                        //make a put request to update the voter profile with the phone number and email from the csv
-                        voterData = await voterResponse.json();
-                        console.log(voterData);
-                        let voterId = voterData['voter']["id"];
-
-                        let voterUpdateResponse = await fetch(`${API_URL}/voter`, {
-                            method: 'PUT',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                voter_id: voterId,
-                                voter_phone_number: formattedPhoneNumber,
-                                voter_email: voter["voter_email"],
-                                voter_profile: voter["voter_profile"]
-                            })
-                        });
-
-                        if (voterUpdateResponse && !voterUpdateResponse.ok) {
-                            console.error(`Error updating voter ${voter["voter_name"]}`);
-                            continue;
-                        }
-
+            for (let i = 0; i < voters.length; i += batchSize) {
+                const batch = voters.slice(i, i + batchSize);
+                const batchPromises = batch.map(async (voter) => {
+                    const formattedPhoneNumber = formatPhoneNumber(voter.voter_phone_number);
+                    
+                    if (!formattedPhoneNumber && !voter.voter_email) {
+                        console.log("Voter has no phone number or email");
+                        return null;
                     }
 
-                    const voterId = voterData['voter']["id"];
+                    const queryParam = formattedPhoneNumber 
+                        ? `voter_phone_number=${formattedPhoneNumber}` 
+                        : `voter_email=${voter.voter_email}`;
 
-                    // Add voter to audience
-                    voterIds.push(voterId);
+                    try {
+                        const voterResponse = await fetch(`${API_URL}/voter?${queryParam}`);
+                        let voterData;
 
-                    
-                } else {
-                    console.error(`Error fetching voter ${formattedPhoneNumber}`);
-                }
+                        if (!voterResponse.ok) {
+                            // Create new voter
+                            const newVoterResponse = await fetch(`${API_URL}/voter`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    voter_name: voter.voter_name,
+                                    voter_phone_number: formattedPhoneNumber,
+                                    voter_email: voter.voter_email,
+                                    voter_profile: voter.voter_profile
+                                })
+                            });
+                            voterData = await newVoterResponse.json();
+                        } else {
+                            // Update existing voter
+                            voterData = await voterResponse.json();
+                            const updateResponse = await fetch(`${API_URL}/voter`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    voter_id: voterData.voter.id,
+                                    voter_phone_number: formattedPhoneNumber,
+                                    voter_email: voter.voter_email,
+                                    voter_profile: voter.voter_profile
+                                })
+                            });
+                            if (!updateResponse.ok) {
+                                console.error(`Error updating voter ${voter.voter_name}`);
+                            }
+                        }
 
+                        return voterData.voter.id;
+                    } catch (error) {
+                        console.error(`Error processing voter: ${error}`);
+                        return null;
+                    }
+                });
+
+                const batchResults = await Promise.all(batchPromises);
+                voterIds.push(...batchResults.filter(id => id !== null));
             }
-            let audience = {
-                            audience_id: audienceId,
-                            voters: voterIds,
-                            campaigns: [localCampaign?.id]
-            };
 
-            //create a PUT request to the audience endpoint to add the voters to the audience
-            let audienceUpdateResponse = await fetch(`${API_URL}/audience`, {
-                method: 'PUT',
-                headers: {
-                'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(audience)
-            });
-
-            if (audienceUpdateResponse && !audienceUpdateResponse.ok) {
-                console.error(`Error updating audience for ${localCampaign?.campaign_name}`);
-                isLoading = false;
-                return;
-            }
+            // Update audience with voter IDs
+            await updateAudience(audienceId, voterIds);
         }
 
         console.log("Campaign audiences:");
@@ -272,6 +231,22 @@
         
         goto(`/campaign/create/confirmation`);
     }
+
+    async function updateAudience(audienceId: string, voterIds: string[]) {
+        const updateResponse = await fetch(`${API_URL}/audience`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                audience_id: audienceId,
+                voters: voterIds,
+                campaigns: [localCampaign?.id]
+            })
+        });
+
+        if (!updateResponse.ok) {
+            console.error(`Error updating audience for ${localCampaign?.campaign_name}`);
+        }
+    }
 </script>
 
 <!-- Path: src/routes/campaign/audience/+page.svelte -->
@@ -307,5 +282,4 @@
         Submit
     {/if}
 </button>
-
 
