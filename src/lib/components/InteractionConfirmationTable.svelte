@@ -1,16 +1,13 @@
 <script lang="ts">
-    import type { Sender, Campaign, Interaction } from '$lib/model';
-    import { campaignStore } from '$lib/stores/campaignStore';
-    import { onDestroy, onMount } from 'svelte';
+    import type { Campaign, Interaction } from '$lib/model';
+    import { onMount } from 'svelte';
     import { API_URL } from '$lib/utility';
     import { writable, type Writable } from 'svelte/store';
-    import { Socket, io } from 'socket.io-client';
 	import InteractionToConfirm from './InteractionToConfirm.svelte';
 
     export let campaign_id: string = "";
 
     let interactions: Writable<Interaction[]> = writable([] as Interaction[]);
-    let socket: Socket;
     let localCampaign: Campaign = {} as Campaign
 
     onMount(async () => {
@@ -18,31 +15,6 @@
         console.log("Campaign id: ", campaign_id);
 
         localCampaign.id = campaign_id 
-
-        socket = io(`${API_URL}`);
-
-        socket.emit('subscribe_campaign_initialization', { "campaign_id": campaign_id });
-
-        socket.on('interaction_initialized', async (data) => {
-            console.log("Interaction initialized");
-            console.log(data);
-            let interaction_id = data.interaction_id;
-            const response = await fetch(`${API_URL}/interaction?interaction_id=${interaction_id}`);
-            const interactionData = await response.json();
-            const interaction: Interaction = interactionData.interaction as Interaction;
-
-            console.log("Interaction from server:");
-            console.log(interaction);
-
-            // Add the interaction to the interactions array and refresh the table
-            interactions.set([...$interactions, interaction]);
-            console.log("Interactions:");
-            console.log($interactions);
-        });
-
-        socket.onAny((event, ...args) => {
-            console.log(event, args);
-        });
         
         //get current campaign from api
         const res = await fetch(`${API_URL}/campaign?campaign_id=${localCampaign?.id}`);
