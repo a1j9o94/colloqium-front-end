@@ -6,19 +6,18 @@ export const load = (async ({ fetch, params }) => {
     const { campaignId } = params;
 
     try {
-        const response = await fetch(`/api/campaign?campaign_id=${campaignId}`, {
-            method: 'GET'
-        });
-
+        const response = await fetch(`/api/campaign?campaign_id=${campaignId}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const jsonResponse = await response.json();
-        console.log(jsonResponse);
+        const campaign = jsonResponse.campaign as Campaign;
+
+        // Don't extract audience IDs here, we'll do it in the component
 
         return {
-            campaign: jsonResponse.campaign as Campaign
+            campaign
         };
     } catch (err) {
         console.error("Error fetching campaign:", err);
