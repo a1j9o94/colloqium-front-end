@@ -11,6 +11,7 @@
     let error: string | null = null;
 
     async function fetchInteraction(interactionId: number): Promise<Interaction> {
+
         const response = await fetch(`/api/interaction?interaction_id=${interactionId}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
