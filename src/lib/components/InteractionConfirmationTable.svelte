@@ -6,12 +6,13 @@
 
     export let campaign_id: string = "";
 
-    let interactions: Writable<(Interaction | null)[]> = writable([]);
+    let interactions: Writable<Interaction[]> = writable([]);
     let isLoading = true;
     let error: string | null = null;
+    let loadedCount = 0;
+    let totalCount = 0;
 
     async function fetchInteraction(interactionId: number): Promise<Interaction> {
-
         const response = await fetch(`/api/interaction?interaction_id=${interactionId}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -31,24 +32,21 @@
             }
             const data = await res.json();
             const interactionIds = data.interaction_ids;
-
-            // Initialize interactions with null placeholders
-            interactions.set(interactionIds.map(() => null));
+            totalCount = interactionIds.length;
 
             // Fetch each interaction
-            interactionIds.forEach(async (id, index) => {
+            for (const id of interactionIds) {
                 try {
                     const interaction = await fetchInteraction(id);
                     if (interaction.interaction_status < 4 && interaction.conversation.length > 0) {
-                        interactions.update(items => {
-                            items[index] = interaction;
-                            return items;
-                        });
+                        interactions.update(items => [interaction, ...items]);
                     }
+                    loadedCount++;
                 } catch (err) {
                     console.error(`Error fetching interaction ${id}:`, err);
+                    loadedCount++;
                 }
-            });
+            }
         } catch (err) {
             console.error("Error loading interactions:", err);
             error = "Failed to load interactions. Please try refreshing the page.";
@@ -117,9 +115,19 @@
                     </tr>
                 </thead>
                 <tbody class="text-sm divide-y divide-slate-200 dark:divide-slate-700">
-                    {#each $interactions as interaction, interactionIndex (interactionIndex)}
+                    {#each $interactions as interaction, interactionIndex (interaction.id)}
                         <InteractionToConfirm {interaction} {interactionIndex} {sendInteraction} />
                     {/each}
+                    {#if isLoading || loadedCount < totalCount}
+                        <tr>
+                            <td colspan="3" class="px-2 first:pl-5 last:pr-5 py-3">
+                                <div class="flex items-center justify-center">
+                                    <span class="loading loading-spinner loading-md mr-2"></span>
+                                    Loading interactions... ({loadedCount} / {totalCount})
+                                </div>
+                            </td>
+                        </tr>
+                    {/if}
                 </tbody>
             </table>
         </div>
