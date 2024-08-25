@@ -1,7 +1,6 @@
 <script>
     import { onMount, onDestroy } from 'svelte';
     import { io } from 'socket.io-client';
-    import { API_URL } from '$lib/utility';
     import { writable } from 'svelte/store';
     import AuthCheck from '$lib/components/AuthCheck.svelte';
 
@@ -15,7 +14,7 @@
         const interaction = $interactions[interactionIndex];
         let interactionId = interaction.id;
         let interactionMethod = "send_text";
-        let url = `${API_URL}/${interactionMethod}`;
+        let url = `/api/${interactionMethod}`;
 
         try {
             let response = await fetch(url, {
@@ -50,7 +49,7 @@
 
         console.log("Sender:", sender);
         // Connect to the server
-        socket = io(`${API_URL}`);
+        socket = io(`/api`);
 
         // Join the room for the current sender
         socket.emit('subscribe_sender_confirmation', { "sender_id": sender.id });
@@ -59,7 +58,7 @@
         // Listen for the 'interaction_initialized' event
         socket.on('interaction_initialized', async (data) => {
             // Fetch the interaction object from the API
-            const response = await fetch(`${API_URL}/interaction?interaction_id=${data.interaction_id}`);
+            const response = await fetch(`/api/interaction?interaction_id=${data.interaction_id}`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }

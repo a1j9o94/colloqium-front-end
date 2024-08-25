@@ -32,7 +32,7 @@ export function formatPhoneNumber(phoneNumber: string): string {
 
 // Modify the function to accept an event object
 export async function refreshSingleEvaluation(campaign_id: string, interaction_id: string) {
-  const res = await fetch(`${API_URL}/campaign/insights`, {
+  const res = await fetch(`/api/campaign/insights`, {
       method: 'PUT',
       headers: {
           'Content-Type': 'application/json'

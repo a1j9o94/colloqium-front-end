@@ -3,7 +3,6 @@
     import io from 'socket.io-client';
     import type { Socket } from 'socket.io-client';
 	import type { Interaction } from '$lib/model.js';
-    import { API_URL } from '$lib/utility.js';
     import { writable } from 'svelte/store';
     import type { Writable } from 'svelte/store';
     import InteractionConfirmationTable from '$lib/components/InteractionConfirmationTable.svelte';
@@ -15,7 +14,7 @@
     let interactions: Writable<Interaction[]> = writable([]);
 
     async function fetchInteraction(interactionId: number) {
-        const response = await fetch(`${API_URL}/interaction?interaction_id=${interactionId}`);
+        const response = await fetch(`/api/interaction?interaction_id=${interactionId}`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -29,7 +28,7 @@
 
     onMount(() => {
         // Connect to the server
-        socket = io(`${API_URL}`);
+        socket = io(`/api`);
 
         // Join the room for the current campaign
         socket.emit('subscribe_campaign_initialization', { campaign_id: campaign.id });

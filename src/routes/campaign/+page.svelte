@@ -6,7 +6,6 @@
     import { campaignStore } from "$lib/stores/campaignStore.js";
     import type { Campaign, Sender } from "$lib/model";
     import { userData, user } from "$lib/firebase";
-    import { API_URL } from "$lib/utility";
 
     
     let campaigns: Campaign[] = [];
@@ -38,7 +37,7 @@
     });
 
     async function get_campaign(sender_id: string): Promise<Campaign[]> {
-        const response = await fetch(`${API_URL}/campaign?sender_id=${sender_id}`, {
+        const response = await fetch(`/api/campaign?sender_id=${sender_id}`, {
             method: 'GET'
         });
 

@@ -1,5 +1,4 @@
 import type { PageLoad } from './$types';
-import { API_URL } from '$lib/utility';
 import type { Campaign } from '$lib/model';
 
 export const load = (async ({fetch, params}) => {
@@ -9,7 +8,7 @@ export const load = (async ({fetch, params}) => {
     const fetchCampaign = async (): Promise<Campaign> => {
         try {
             // Fetching the data from the API
-            const response = await fetch(`${API_URL}/campaign?campaign_id=${campaignId}`, {
+            const response = await fetch(`/api/campaign?campaign_id=${campaignId}`, {
               method: 'GET'
             });
         

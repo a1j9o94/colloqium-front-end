@@ -63,7 +63,7 @@
         funnelLoading = true;
         socket.emit('subscribe_funnel_refresh', { "campaign_id": campaign.id });
         console.log(`Emitted subscribe_funnel_refresh for campaign id: , ${campaign.id}`)
-        const res = await fetch(`${API_URL}/campaign/insights`, {
+        const res = await fetch(`/api/campaign/insights`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -80,7 +80,7 @@
 
         insightsLoading = true;
         socket.emit('subscribe_campaign_insight_refresh', { "campaign_id": campaign.id });
-        const res = await fetch(`${API_URL}/campaign/insights`, {
+        const res = await fetch(`/api/campaign/insights`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -137,7 +137,7 @@
     onMount(async () => {
         console.log(campaign);
 
-        socket = io(`${API_URL}`);
+        socket = io(`/api`);
 
         //log all inbound socket events
         socket.onAny((event, ...args) => {
@@ -156,7 +156,7 @@
             }
 
             // Fetch the interaction object from the API
-            const response = await fetch(`${API_URL}/interaction?interaction_id=${data.interaction_id}`);
+            const response = await fetch(`/api/interaction?interaction_id=${data.interaction_id}`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -193,7 +193,7 @@
             console.log(data);
 
             // Fetch the campaign object from the API
-            const response = await fetch(`${API_URL}/campaign?campaign_id=${campaign.id}`);
+            const response = await fetch(`/api/campaign?campaign_id=${campaign.id}`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -213,7 +213,7 @@
             console.log(data);
 
             // Fetch the campaign object from the API
-            const response = await fetch(`${API_URL}/campaign?campaign_id=${campaign.id}`);
+            const response = await fetch(`/api/campaign?campaign_id=${campaign.id}`);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -227,8 +227,8 @@
             insightsLoading = false;
         });
 
-        // Get interactions from ${API_URL}/interaction?campaign_id=${campaign.id}
-        const res = await fetch(`${API_URL}/interaction?campaign_id=${campaign.id}`);
+        // Get interactions from /api/interaction?campaign_id=${campaign.id}
+        const res = await fetch(`/api/interaction?campaign_id=${campaign.id}`);
         const data = await res.json();
         console.log(data);
         interactions = data.interactions;
