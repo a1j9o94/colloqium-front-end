@@ -77,7 +77,8 @@
             });
 
             if (response.status != 200) {
-                throw new Error('Response not OK');
+                console.error("Error: ", response);
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             interaction.sent = true;

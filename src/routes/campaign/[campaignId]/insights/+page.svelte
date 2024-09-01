@@ -1,17 +1,19 @@
 <script lang="ts">
     import AuthCheck from '$lib/components/AuthCheck.svelte';
-	import type { Interaction } from '$lib/model.js';
+    import type { Interaction } from '$lib/model.js';
     import { API_URL, refreshSingleEvaluation } from '$lib/utility';
-	import { onDestroy, onMount } from 'svelte';
+    import { onMount, tick } from 'svelte';
     import 'c3/c3.css';
-    import io from 'socket.io-client';
-    import Card from '$lib/components/landing/components/Card.svelte';
-	import Cards from '$lib/components/landing/Cards.svelte';
-    
+    import Cards from '$lib/components/landing/Cards.svelte';
+    import { writable, type Writable } from 'svelte/store';
+
     export let data;
     let { campaign } = data;
-    let interactions: Interaction[];
-    let responded_interactions: Interaction[] = [];
+    let interactions: Writable<Interaction[]> = writable([]);
+    let isLoading = true;
+    let error: string | null = null;
+    let loadedCount = 0;
+    let totalCount = 0;
     let funnelLoading = false;
     let insightsLoading = false;
     let summaries = [
@@ -19,88 +21,146 @@
         { title: 'Communications Summary', content: campaign.communications_director_summary },
         { title: 'Field Summary', content: campaign.field_director_summary }
     ];
-    let socket;
 
-    async function refreshEvaluations() {
-        //for each item in the responded interactions array call the refreshSingleEvaluation function
-        responded_interactions.forEach(interaction => {
-            refreshSingleEvaluation(campaign.id, interaction.id);
-            socket.emit('subscribe_interaction_evaluation', { "interaction_id": interaction.id });
-            console.log(`Emitted subscribe_interaction_evaluation for interaction id: , ${interaction.id}`)
-            interaction.loading = true;
-            //trigger reactivity
-            responded_interactions = [...responded_interactions];
-        });
+    async function fetchInteraction(interactionId: number): Promise<Interaction> {
+        const response = await fetch(`/api/interaction?interaction_id=${interactionId}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data.interaction;
     }
 
-    // Modify the function to accept an event object
-    async function singleRefreshRequest(event: MouseEvent) {
-        const interaction_id = event?.currentTarget?.dataset?.interactionId;
+    async function refreshEvaluations() {
+        for (const interaction of responded_interactions) {
+            interaction.loading = true;
+        }
+        responded_interactions = [...responded_interactions];
+        await tick();
 
-        if(!interaction_id) {
+        for (const interaction of responded_interactions) {
+            try {
+                await Promise.race([
+                    refreshSingleEvaluation(campaign.id, interaction.id),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 300000)) // 5 minutes timeout
+                ]);
+                await updateInteraction(interaction);
+            } catch (error) {
+                console.error(`Error refreshing evaluation for interaction ${interaction.id}:`, error);
+                interaction.loading = false;
+            }
+        }
+        responded_interactions = [...responded_interactions];
+    }
+
+    async function singleRefreshRequest(event: MouseEvent) {
+        const interaction_id = (event.currentTarget as HTMLElement).dataset.interactionId;
+
+        if (!interaction_id) {
             console.log('No interaction ID found');
             return;
         }
 
-        refreshSingleEvaluation(campaign.id, interaction_id)
-        socket.emit('subscribe_interaction_evaluation', { "interaction_id": interaction_id });
-        console.log(`Emitted subscribe_interaction_evaluation for interaction id: , ${interaction_id}`)
         const interaction = responded_interactions.find(interaction => interaction.id == interaction_id);
-        if(!interaction) {
-            console.log(responded_interactions)
+        if (!interaction) {
             console.log('Interaction not found');
             return;
         }
-        interaction.loading = true;
 
-        //trigger reactivity
+        interaction.loading = true;
+        responded_interactions = [...responded_interactions];
+        await tick();
+
+        try {
+            await Promise.race([
+                refreshSingleEvaluation(campaign.id, interaction_id),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 300000)) // 5 minutes timeout
+            ]);
+            await updateInteraction(interaction);
+        } catch (error) {
+            console.error(`Error refreshing evaluation for interaction ${interaction_id}:`, error);
+            interaction.loading = false;
+        }
         responded_interactions = [...responded_interactions];
     }
 
-
     async function refreshFunnel() {
-
         funnelLoading = true;
-        socket.emit('subscribe_funnel_refresh', { "campaign_id": campaign.id });
-        console.log(`Emitted subscribe_funnel_refresh for campaign id: , ${campaign.id}`)
-        const res = await fetch(`/api/campaign/insights`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 
-                campaign_id: campaign.id,
-                refresh_funnel: true })
-        });
-        const data = await res.json();
-        console.log(data);
+        try {
+            const res = await Promise.race([
+                fetch(`/api/campaign/insights`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        campaign_id: campaign.id,
+                        refresh_funnel: true 
+                    })
+                }),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 300000)) // 5 minutes timeout
+            ]);
+            const data = await res.json();
+            console.log(data);
+            await updateCampaign();
+            renderChart();
+        } catch (error) {
+            console.error('Error refreshing funnel:', error);
+        } finally {
+            funnelLoading = false;
+        }
     }
 
     async function refreshInsights() {
-
         insightsLoading = true;
-        socket.emit('subscribe_campaign_insight_refresh', { "campaign_id": campaign.id });
-        const res = await fetch(`/api/campaign/insights`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 
-                campaign_id: campaign.id,
-                refresh_campaign_insights: true })
-        });
-        const data = await res.json();
-        console.log(data);
+        try {
+            const res = await Promise.race([
+                fetch(`/api/campaign/insights`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        campaign_id: campaign.id,
+                        refresh_campaign_insights: true 
+                    })
+                }),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 300000)) // 5 minutes timeout
+            ]);
+            const data = await res.json();
+            console.log(data);
+            await updateCampaign();
+        } catch (error) {
+            console.error('Error refreshing insights:', error);
+        } finally {
+            insightsLoading = false;
+        }
+    }
+
+    async function updateInteraction(interaction: Interaction) {
+        const response = await fetch(`/api/interaction?interaction_id=${interaction.id}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const interaction_response = await response.json();
+        Object.assign(interaction, interaction_response.interaction);
+        interaction.loading = false;
+        responded_interactions = [...responded_interactions];
+    }
+
+    async function updateCampaign() {
+        const response = await fetch(`/api/campaign?campaign_id=${campaign.id}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const campaign_response = await response.json();
+        Object.assign(campaign, campaign_response.campaign);
+        campaign = campaign;
     }
 
     async function renderChart() {
-
         const object = await import('c3');
         const c3 = object.default;
         const categories = ['Sent', 'Delivered', 'Responded', 'Converted'];
 
         var chart = c3.generate({
-            bindto: '#funnelChart', // make sure to bind to an element with this ID
+            bindto: '#funnelChart',
             data: {
                 columns: [
                     ['Campaign', campaign.interactions_sent, campaign.interactions_delivered, campaign.interactions_responded, campaign.interactions_converted]
@@ -137,115 +197,52 @@
     onMount(async () => {
         console.log(campaign);
 
-        socket = io(`/api`);
-
-        //log all inbound socket events
-        socket.onAny((event, ...args) => {
-            console.log(event, args);
-        });
-
-        socket.on("interaction_evaluated", async (data) => {
-            console.log("Received interaction_evaluated event");
+        try {
+            // Get interaction IDs from /api/interaction?campaign_id=${campaign.id}
+            const interaction_status_threshold = 6;
+            const res = await fetch(`/api/interaction?campaign_id=${campaign.id}&interaction_status=${interaction_status_threshold}`);
+            const data = await res.json();
             console.log(data);
+            const interactionIds = data.interaction_ids;
+            totalCount = interactionIds.length;
 
-            // Find the interaction in the array
-            const interaction = responded_interactions.find(interaction => interaction.id === data.interaction_id);
-            if (!interaction) {
-                console.log("Interaction not found");
-                return;
-            }
+            // Initialize interactions with placeholders
+            interactions.set(interactionIds.map(id => ({ id, loading: true })));
 
-            // Fetch the interaction object from the API
-            const response = await fetch(`/api/interaction?interaction_id=${data.interaction_id}`);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const interaction_response = await response.json();
+            // Fetch interactions asynchronously
+            interactionIds.forEach(async (id, index) => {
+                try {
+                    const interaction = await fetchInteraction(id);
+                    if (interaction.interaction_status >= 6) {
+                        interactions.update(items => {
+                            const newItems = [...items];
+                            newItems[index] = interaction;
+                            return newItems;
+                        });
+                    }
+                } catch (err) {
+                    console.error(`Error fetching interaction ${id}:`, err);
+                } finally {
+                    loadedCount++;
+                    if (loadedCount === totalCount) {
+                        // Sort interactions by campaign_relevance_score
+                        interactions.update(items => items.sort((a, b) => b.campaign_relevance_score - a.campaign_relevance_score));
+                        isLoading = false;
+                    }
+                }
+            });
 
-            // Update the interaction object
-            Object.assign(interaction, interaction_response.interaction);
-            interaction.loading = false;
+        } catch (err) {
+            console.error("Error loading interactions:", err);
+            error = "Failed to load interactions. Please try refreshing the page.";
+            isLoading = false;
+        }
 
-            // This assignment will trigger Svelte's reactivity
-            responded_interactions = [...responded_interactions];
-        });
-
-        //if I get an error from the socket route, I should set the interaction id to not loading
-        socket.on("interaction_evaluation_error", async (data) => {
-            console.log("Received error event");
-            console.log(data);
-
-            // Find the interaction in the array
-            const interaction = responded_interactions.find(interaction => interaction.id === data.interaction_id);
-            if (!interaction) {
-                console.log("Interaction not found");
-                return;
-            }
-
-            interaction.loading = false;
-
-            // This assignment will trigger Svelte's reactivity
-            responded_interactions = [...responded_interactions];
-        });
-        
-        socket.on("funnel_refreshed", async (data) => {
-            console.log("Received funnel_refreshed event");
-            console.log(data);
-
-            // Fetch the campaign object from the API
-            const response = await fetch(`/api/campaign?campaign_id=${campaign.id}`);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const campaign_response = await response.json();
-
-            // Update the campaign object
-            Object.assign(campaign, campaign_response.campaign);
-
-            // This assignment will trigger Svelte's reactivity
-            funnelLoading = false;
-            renderChart();
-            campaign = campaign;
-        });
-
-        socket.on("campaign_insight_refreshed", async (data) => {
-            console.log("Received campaign_insight_refreshed event");
-            console.log(data);
-
-            // Fetch the campaign object from the API
-            const response = await fetch(`/api/campaign?campaign_id=${campaign.id}`);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const campaign_response = await response.json();
-
-            // Update the campaign object
-            Object.assign(campaign, campaign_response.campaign);
-
-            // This assignment will trigger Svelte's reactivity
-            campaign = campaign;
-            insightsLoading = false;
-        });
-
-        // Get interactions from /api/interaction?campaign_id=${campaign.id}
-        const res = await fetch(`/api/interaction?campaign_id=${campaign.id}`);
-        const data = await res.json();
-        console.log(data);
-        interactions = data.interactions;
-
-        console.log(summaries)
-
-        // Filter for interactions where campaign_relevance_score is not null
-        responded_interactions = interactions.filter(interaction => interaction.interaction_status >= 6); // conversation_status >= 6 means the voter has responded to the campaign
-        responded_interactions.sort((a, b) => b.campaign_relevance_score - a.campaign_relevance_score);
-        console.log(responded_interactions);
-
+        console.log(summaries);
         renderChart();
-
-        return () => {
-            socket?.disconnect();
-        };
     });
+
+    // ... existing code ...
 </script>
 
 <div class="px-20">
@@ -307,7 +304,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {#each responded_interactions as interaction}
+                    {#each $interactions as interaction}
                         <tr>
                             {#if interaction.loading}
                                 <span class="loading loading-spinner loading-md h-28"></span>
@@ -332,6 +329,16 @@
                             {/if}
                         </tr>
                     {/each}
+                    {#if isLoading || loadedCount < totalCount}
+                        <tr>
+                            <td colspan="6" class="px-4 py-2">
+                                <div class="flex items-center justify-center">
+                                    <span class="loading loading-spinner loading-md mr-2"></span>
+                                    Loading interactions... ({loadedCount} / {totalCount})
+                                </div>
+                            </td>
+                        </tr>
+                    {/if}
                 </tbody>
             </table>
             <button class="btn btn-primary my-5" on:click={refreshEvaluations}>Refresh Evaluations</button>
