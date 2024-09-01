@@ -200,7 +200,7 @@
         try {
             // Get interaction IDs from /api/interaction?campaign_id=${campaign.id}
             const interaction_status_threshold = 6;
-            const res = await fetch(`/api/interaction?campaign_id=${campaign.id}&interaction_status=${interaction_status_threshold}`);
+            const res = await fetch(`/api/interaction?campaign_id=${campaign.id}&min_interaction_status=${interaction_status_threshold}`);
             const data = await res.json();
             console.log(data);
             const interactionIds = data.interaction_ids;
