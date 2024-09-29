@@ -79,116 +79,46 @@
 
     async function handleSubmit() {
         isLoading = true;
-        //check if a csv was submitted by seeing the voters array is empty
+
         if (voters.length != 0) {
-        
-            //create a new audience with the voters
-            let audienceResponse = await fetch(`${API_URL}/audience`, {
+
+            let voters_payload = {
+                voters: voters,
+                bulk_create_or_update: true,
+                audience_data: {
+                    audience_name: audienceName,
+                    sender_id: localCampaign?.sender.id,
+                    campaigns: [localCampaign?.id],
+                    audience_information: "This is an audience for the campaign " + localCampaign?.campaign_name
+                }
+            };
+
+            let voters_response = await fetch(`${API_URL}/voter`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    audience_name: audienceName,
-                    sender_id: localCampaign?.sender.id,
-                    audience_information: "This is an audience for the campaign " + localCampaign?.campaign_name
-                })
+                body: JSON.stringify(voters_payload)
             });
 
-            if (audienceResponse && !audienceResponse.ok) {
-                console.error(`Error creating audience for ${localCampaign?.campaign_name}`);
+            if (voters_response && !voters_response.ok) {
+                console.error(`Error creating voters for ${localCampaign?.campaign_name}`);
                 isLoading = false;
                 return;
             }
-
-            // At this point, audience has been created
-            const audienceData = await audienceResponse.json();
-            const audienceId = audienceData['audience']["id"];
-
-            const batchSize = 100; // Adjust based on your API's capabilities
-            const voterIds = [];
-
-            for (let i = 0; i < voters.length; i += batchSize) {
-                const batch = voters.slice(i, i + batchSize);
-                const batchPromises = batch.map(async (voter) => {
-                    const formattedPhoneNumber = formatPhoneNumber(voter.voter_phone_number);
-                    
-                    if (!formattedPhoneNumber && !voter.voter_email) {
-                        console.log("Voter has no phone number or email");
-                        return null;
-                    }
-
-                    const queryParam = formattedPhoneNumber 
-                        ? `voter_phone_number=${formattedPhoneNumber}` 
-                        : `voter_email=${voter.voter_email}`;
-
-                    try {
-                        const voterResponse = await fetch(`${API_URL}/voter?${queryParam}`);
-                        let voterData;
-
-                        if (!voterResponse.ok) {
-                            // Create new voter
-                            const newVoterResponse = await fetch(`${API_URL}/voter`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    voter_name: voter.voter_name,
-                                    voter_phone_number: formattedPhoneNumber,
-                                    voter_email: voter.voter_email,
-                                    voter_profile: voter.voter_profile
-                                })
-                            });
-                            voterData = await newVoterResponse.json();
-                        } else {
-                            // Update existing voter
-                            voterData = await voterResponse.json();
-                            const updateResponse = await fetch(`${API_URL}/voter`, {
-                                method: 'PUT',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    voter_id: voterData.voter.id,
-                                    voter_phone_number: formattedPhoneNumber,
-                                    voter_email: voter.voter_email,
-                                    voter_profile: voter.voter_profile
-                                })
-                            });
-                            if (!updateResponse.ok) {
-                                console.error(`Error updating voter ${voter.voter_name}`);
-                            }
-                        }
-
-                        return voterData.voter.id;
-                    } catch (error) {
-                        console.error(`Error processing voter: ${error}`);
-                        return null;
-                    }
-                });
-
-                const batchResults = await Promise.all(batchPromises);
-                voterIds.push(...batchResults.filter(id => id !== null));
-            }
-
-            // Update audience with voter IDs
-            await updateAudience(audienceId, voterIds);
         }
 
-        console.log("Campaign audiences:");
-        console.log(campaignAudiences);
-        //create a PUT request to the audience endpoint for each audience in campaign audiences the put request needs the audience id and a campaigns array with this campaign id
-        for (let audience of campaignAudiences) {
-            
-            console.log("Audience:");
-            console.log(audience);
+        // Update existing audiences associated with the campaign
+        for (let audienceId of campaignAudiences) {
             const request_body = JSON.stringify({
-                audience_id: audience, //audience.id,
+                audience_id: audienceId,
                 campaigns: [localCampaign?.id]
             });
-            console.log("Request body:");
-            console.log(request_body);
+
             let audienceUpdateResponse = await fetch(`${API_URL}/audience`, {
                 method: 'PUT',
                 headers: {
-                'Content-Type': 'application/json'
+                    'Content-Type': 'application/json'
                 },
                 body: request_body
             });
@@ -204,14 +134,7 @@
             interaction_type: localCampaign?.campaign_type,
         });
 
-        console.log("Local Campaign:");
-        console.log(localCampaign);
-
-        console.log("Interaction body:");
-        console.log(interaction_body);
-
-        // At this point, audience has been updated
-        //call the interaction route with a post including the campaign id and interaction type to generate the messages
+        // Create the interaction
         let interactionResponse = await fetch(`${API_URL}/interaction`, {
             method: 'POST',
             headers: {
@@ -228,24 +151,7 @@
         }
 
         isLoading = false;
-        
         goto(`/campaign/create/confirmation`);
-    }
-
-    async function updateAudience(audienceId: string, voterIds: string[]) {
-        const updateResponse = await fetch(`${API_URL}/audience`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                audience_id: audienceId,
-                voters: voterIds,
-                campaigns: [localCampaign?.id]
-            })
-        });
-
-        if (!updateResponse.ok) {
-            console.error(`Error updating audience for ${localCampaign?.campaign_name}`);
-        }
     }
 </script>
 
