@@ -116,9 +116,6 @@
                     </tr>
                 </thead>
                 <tbody class="text-sm divide-y divide-slate-200 dark:divide-slate-700">
-                    {#each $interactions as interaction, interactionIndex (interaction.id)}
-                        <InteractionToConfirm {interaction} {interactionIndex} {sendInteraction} />
-                    {/each}
                     {#if isLoading || loadedCount < totalCount}
                         <tr>
                             <td colspan="3" class="px-2 first:pl-5 last:pr-5 py-3">
@@ -129,6 +126,10 @@
                             </td>
                         </tr>
                     {/if}
+
+                    {#each $interactions as interaction, interactionIndex (interaction.id)}
+                        <InteractionToConfirm {interaction} {interactionIndex} {sendInteraction} />
+                    {/each}
                 </tbody>
             </table>
         </div>
